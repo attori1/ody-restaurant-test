@@ -3,8 +3,14 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "@ody/api-client": ["../../packages/api-client/src/index.ts"]
+      "@ody/api-client": [
+        "../../packages/api-client/src/index.ts"
+      ]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.d.ts", "expo-env.d.ts"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.d.ts"
+  ]
 }

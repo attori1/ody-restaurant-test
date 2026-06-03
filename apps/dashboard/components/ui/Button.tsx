@@ -25,7 +25,7 @@ export function Button({ onPress, label, variant = 'primary', size = 'md', loadi
       activeOpacity={0.75}
     >
       {loading && <ActivityIndicator size="small" color={variant === 'primary' ? colors.textInverse : colors.primary} style={styles.spinner} />}
-      <Text style={[styles.label, labelStyles[variant], labelSizeStyles[size]]}>{label}</Text>
+      <Text style={[labelStyles[variant], labelSizeStyles[size]]}>{label}</Text>
     </TouchableOpacity>
   )
 }

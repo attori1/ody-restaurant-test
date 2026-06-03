@@ -96,7 +96,7 @@ menuRouter.openapi(
 
 menuRouter.openapi(
   createRoute({
-    method: 'patch', path: '/items/:id', tags: ['Menu'],
+    method: 'patch', path: '/items/{id}', tags: ['Menu'],
     summary: 'Update a menu item',
     request: {
       params: z.object({ id: z.string() }),
@@ -119,7 +119,7 @@ menuRouter.openapi(
 
 menuRouter.openapi(
   createRoute({
-    method: 'delete', path: '/items/:id', tags: ['Menu'],
+    method: 'delete', path: '/items/{id}', tags: ['Menu'],
     summary: 'Delete a menu item',
     request: { params: z.object({ id: z.string() }) },
     responses: {

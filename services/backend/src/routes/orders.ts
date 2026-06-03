@@ -67,7 +67,7 @@ ordersRouter.openapi(
 
 ordersRouter.openapi(
   createRoute({
-    method: 'get', path: '/:id', tags: ['Orders'],
+    method: 'get', path: '/{id}', tags: ['Orders'],
     summary: 'Get order with items',
     request: { params: z.object({ id: z.string() }) },
     responses: {
@@ -161,7 +161,7 @@ ordersRouter.openapi(
 
 ordersRouter.openapi(
   createRoute({
-    method: 'post', path: '/:id/status', tags: ['Orders'],
+    method: 'post', path: '/{id}/status', tags: ['Orders'],
     summary: 'Update order status (enforces valid state transitions)',
     request: {
       params: z.object({ id: z.string() }),

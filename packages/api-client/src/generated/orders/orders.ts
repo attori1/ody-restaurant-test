@@ -200,13 +200,13 @@ export const usePostApiOrders = <TError = void,
  * @summary Get order with items
  */
 export const getApiOrdersId = (
-    
+    id: string,
  signal?: AbortSignal
 ) => {
       
       
       return axiosInstance<GetApiOrdersId200>(
-      {url: `/api/orders/:id`, method: 'GET', signal
+      {url: `/api/orders/${id}`, method: 'GET', signal
     },
       );
     }
@@ -214,29 +214,29 @@ export const getApiOrdersId = (
 
 
 
-export const getGetApiOrdersIdQueryKey = () => {
+export const getGetApiOrdersIdQueryKey = (id?: string,) => {
     return [
-    `/api/orders/:id`
+    `/api/orders/${id}`
     ] as const;
     }
 
     
-export const getGetApiOrdersIdQueryOptions = <TData = Awaited<ReturnType<typeof getApiOrdersId>>, TError = void>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiOrdersId>>, TError, TData>>, }
+export const getGetApiOrdersIdQueryOptions = <TData = Awaited<ReturnType<typeof getApiOrdersId>>, TError = void>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiOrdersId>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiOrdersIdQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetApiOrdersIdQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiOrdersId>>> = ({ signal }) => getApiOrdersId(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiOrdersId>>> = ({ signal }) => getApiOrdersId(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiOrdersId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiOrdersId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetApiOrdersIdQueryResult = NonNullable<Awaited<ReturnType<typeof getApiOrdersId>>>
@@ -244,7 +244,7 @@ export type GetApiOrdersIdQueryError = void
 
 
 export function useGetApiOrdersId<TData = Awaited<ReturnType<typeof getApiOrdersId>>, TError = void>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiOrdersId>>, TError, TData>> & Pick<
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiOrdersId>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiOrdersId>>,
           TError,
@@ -254,7 +254,7 @@ export function useGetApiOrdersId<TData = Awaited<ReturnType<typeof getApiOrders
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetApiOrdersId<TData = Awaited<ReturnType<typeof getApiOrdersId>>, TError = void>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiOrdersId>>, TError, TData>> & Pick<
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiOrdersId>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiOrdersId>>,
           TError,
@@ -264,7 +264,7 @@ export function useGetApiOrdersId<TData = Awaited<ReturnType<typeof getApiOrders
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetApiOrdersId<TData = Awaited<ReturnType<typeof getApiOrdersId>>, TError = void>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiOrdersId>>, TError, TData>>, }
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiOrdersId>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -272,11 +272,11 @@ export function useGetApiOrdersId<TData = Awaited<ReturnType<typeof getApiOrders
  */
 
 export function useGetApiOrdersId<TData = Awaited<ReturnType<typeof getApiOrdersId>>, TError = void>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiOrdersId>>, TError, TData>>, }
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiOrdersId>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetApiOrdersIdQueryOptions(options)
+  const queryOptions = getGetApiOrdersIdQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -292,13 +292,14 @@ export function useGetApiOrdersId<TData = Awaited<ReturnType<typeof getApiOrders
  * @summary Update order status (enforces valid state transitions)
  */
 export const postApiOrdersIdStatus = (
+    id: string,
     postApiOrdersIdStatusBody: PostApiOrdersIdStatusBody,
  signal?: AbortSignal
 ) => {
       
       
       return axiosInstance<PostApiOrdersIdStatus200>(
-      {url: `/api/orders/:id/status`, method: 'POST',
+      {url: `/api/orders/${id}/status`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: postApiOrdersIdStatusBody, signal
     },
@@ -308,8 +309,8 @@ export const postApiOrdersIdStatus = (
 
 
 export const getPostApiOrdersIdStatusMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiOrdersIdStatus>>, TError,{data: PostApiOrdersIdStatusBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postApiOrdersIdStatus>>, TError,{data: PostApiOrdersIdStatusBody}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiOrdersIdStatus>>, TError,{id: string;data: PostApiOrdersIdStatusBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postApiOrdersIdStatus>>, TError,{id: string;data: PostApiOrdersIdStatusBody}, TContext> => {
 
 const mutationKey = ['postApiOrdersIdStatus'];
 const {mutation: mutationOptions} = options ?
@@ -321,10 +322,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postApiOrdersIdStatus>>, {data: PostApiOrdersIdStatusBody}> = (props) => {
-          const {data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postApiOrdersIdStatus>>, {id: string;data: PostApiOrdersIdStatusBody}> = (props) => {
+          const {id,data} = props ?? {};
 
-          return  postApiOrdersIdStatus(data,)
+          return  postApiOrdersIdStatus(id,data,)
         }
 
         
@@ -340,11 +341,11 @@ const {mutation: mutationOptions} = options ?
  * @summary Update order status (enforces valid state transitions)
  */
 export const usePostApiOrdersIdStatus = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiOrdersIdStatus>>, TError,{data: PostApiOrdersIdStatusBody}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiOrdersIdStatus>>, TError,{id: string;data: PostApiOrdersIdStatusBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof postApiOrdersIdStatus>>,
         TError,
-        {data: PostApiOrdersIdStatusBody},
+        {id: string;data: PostApiOrdersIdStatusBody},
         TContext
       > => {
 

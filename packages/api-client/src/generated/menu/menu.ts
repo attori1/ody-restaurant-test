@@ -358,12 +358,13 @@ export const usePostApiMenuItems = <TError = void,
  * @summary Update a menu item
  */
 export const patchApiMenuItemsId = (
+    id: string,
     patchApiMenuItemsIdBody: PatchApiMenuItemsIdBody,
  ) => {
       
       
       return axiosInstance<PatchApiMenuItemsId200>(
-      {url: `/api/menu/items/:id`, method: 'PATCH',
+      {url: `/api/menu/items/${id}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: patchApiMenuItemsIdBody
     },
@@ -373,8 +374,8 @@ export const patchApiMenuItemsId = (
 
 
 export const getPatchApiMenuItemsIdMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchApiMenuItemsId>>, TError,{data: PatchApiMenuItemsIdBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof patchApiMenuItemsId>>, TError,{data: PatchApiMenuItemsIdBody}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchApiMenuItemsId>>, TError,{id: string;data: PatchApiMenuItemsIdBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof patchApiMenuItemsId>>, TError,{id: string;data: PatchApiMenuItemsIdBody}, TContext> => {
 
 const mutationKey = ['patchApiMenuItemsId'];
 const {mutation: mutationOptions} = options ?
@@ -386,10 +387,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchApiMenuItemsId>>, {data: PatchApiMenuItemsIdBody}> = (props) => {
-          const {data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchApiMenuItemsId>>, {id: string;data: PatchApiMenuItemsIdBody}> = (props) => {
+          const {id,data} = props ?? {};
 
-          return  patchApiMenuItemsId(data,)
+          return  patchApiMenuItemsId(id,data,)
         }
 
         
@@ -405,11 +406,11 @@ const {mutation: mutationOptions} = options ?
  * @summary Update a menu item
  */
 export const usePatchApiMenuItemsId = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchApiMenuItemsId>>, TError,{data: PatchApiMenuItemsIdBody}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchApiMenuItemsId>>, TError,{id: string;data: PatchApiMenuItemsIdBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof patchApiMenuItemsId>>,
         TError,
-        {data: PatchApiMenuItemsIdBody},
+        {id: string;data: PatchApiMenuItemsIdBody},
         TContext
       > => {
 
@@ -421,12 +422,12 @@ export const usePatchApiMenuItemsId = <TError = void,
  * @summary Delete a menu item
  */
 export const deleteApiMenuItemsId = (
-    
+    id: string,
  ) => {
       
       
       return axiosInstance<void>(
-      {url: `/api/menu/items/:id`, method: 'DELETE'
+      {url: `/api/menu/items/${id}`, method: 'DELETE'
     },
       );
     }
@@ -434,8 +435,8 @@ export const deleteApiMenuItemsId = (
 
 
 export const getDeleteApiMenuItemsIdMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiMenuItemsId>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteApiMenuItemsId>>, TError,void, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiMenuItemsId>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteApiMenuItemsId>>, TError,{id: string}, TContext> => {
 
 const mutationKey = ['deleteApiMenuItemsId'];
 const {mutation: mutationOptions} = options ?
@@ -447,10 +448,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteApiMenuItemsId>>, void> = () => {
-          
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteApiMenuItemsId>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
 
-          return  deleteApiMenuItemsId()
+          return  deleteApiMenuItemsId(id,)
         }
 
         
@@ -466,11 +467,11 @@ const {mutation: mutationOptions} = options ?
  * @summary Delete a menu item
  */
 export const useDeleteApiMenuItemsId = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiMenuItemsId>>, TError,void, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiMenuItemsId>>, TError,{id: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteApiMenuItemsId>>,
         TError,
-        void,
+        {id: string},
         TContext
       > => {
 

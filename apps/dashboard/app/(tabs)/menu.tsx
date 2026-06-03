@@ -1,39 +1,32 @@
 import { useState } from 'react'
-import { ScrollView, View, Text, StyleSheet, TouchableOpacity, Switch } from 'react-native'
+import { ScrollView, View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { useForm, Controller } from 'react-hook-form'
 import { Card, Button, Badge, Modal, Input, EmptyState, Skeleton } from '../../components/ui'
 import { colors, spacing, typography, radius } from '../../tokens'
+import { useMenu } from '../../hooks/useMenu'
+import type { GetApiMenuItems200Item } from '@ody/api-client'
 
-// Données mock — seront remplacées par les hooks Orval après gen:contract
-const MOCK_CATEGORIES = [
-  { id: '1', name: 'Starters' },
-  { id: '2', name: 'Main Course' },
-  { id: '3', name: 'Desserts' },
-  { id: '4', name: 'Drinks' },
-]
-
-const MOCK_ITEMS = [
-  { id: '1', categoryId: '1', name: 'Bruschetta', price: '8.50', available: true, description: 'Toasted bread with tomatoes' },
-  { id: '2', categoryId: '2', name: 'Grilled Salmon', price: '24.00', available: true, description: 'With lemon butter sauce' },
-  { id: '3', categoryId: '2', name: 'Beef Burger', price: '18.50', available: false, description: '180g beef, cheddar' },
-  { id: '4', categoryId: '3', name: 'Crème Brûlée', price: '8.00', available: true, description: 'Classic French dessert' },
-]
+interface FormValues {
+  name: string
+  price: string
+  categoryId: string
+  description: string
+}
 
 export default function MenuScreen() {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined)
   const [showModal, setShowModal] = useState(false)
-  const [editItem, setEditItem] = useState<(typeof MOCK_ITEMS)[0] | null>(null)
-  const isLoading = false
+  const [editItem, setEditItem] = useState<GetApiMenuItems200Item | null>(null)
 
-  const filtered = selectedCategory
-    ? MOCK_ITEMS.filter((i) => i.categoryId === selectedCategory)
-    : MOCK_ITEMS
+  // Toute la logique de données vient du hook métier — la page reste présentationnelle.
+  const { items, categories, isLoading, isError, createItem, updateItem, deleteItem, isSaving } =
+    useMenu(selectedCategory)
 
-  const { control, handleSubmit, reset, formState: { errors } } = useForm({
-    defaultValues: { name: '', price: '', categoryId: MOCK_CATEGORIES[0].id, description: '' },
+  const { control, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
+    defaultValues: { name: '', price: '', categoryId: '', description: '' },
   })
 
-  const openEdit = (item: (typeof MOCK_ITEMS)[0]) => {
+  const openEdit = (item: GetApiMenuItems200Item) => {
     setEditItem(item)
     reset({ name: item.name, price: item.price, categoryId: item.categoryId, description: item.description ?? '' })
     setShowModal(true)
@@ -41,33 +34,45 @@ export default function MenuScreen() {
 
   const openCreate = () => {
     setEditItem(null)
-    reset({ name: '', price: '', categoryId: MOCK_CATEGORIES[0].id, description: '' })
+    reset({ name: '', price: '', categoryId: categories[0]?.id ?? '', description: '' })
     setShowModal(true)
   }
 
-  const onSubmit = (data: unknown) => {
-    // TODO: appeler useCreateMenuItem ou useUpdateMenuItem (hooks Orval)
-    console.log('submit', data)
+  const onSubmit = async (data: FormValues) => {
+    const payload = {
+      name: data.name,
+      price: data.price,
+      categoryId: data.categoryId,
+      description: data.description || null,
+    }
+    if (editItem) {
+      await updateItem(editItem.id, payload)
+    } else {
+      await createItem(payload)
+    }
     setShowModal(false)
+  }
+
+  const toggleAvailability = async (item: GetApiMenuItems200Item) => {
+    await updateItem(item.id, { available: !item.available })
   }
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Menu</Text>
         <Button label="+ Add Item" onPress={openCreate} size="sm" />
       </View>
 
-      {/* Category filter */}
+      {/* Filtres par catégorie */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow} contentContainerStyle={styles.filterContent}>
         <TouchableOpacity
-          style={[styles.filterChip, selectedCategory === null && styles.filterChipActive]}
-          onPress={() => setSelectedCategory(null)}
+          style={[styles.filterChip, selectedCategory === undefined && styles.filterChipActive]}
+          onPress={() => setSelectedCategory(undefined)}
         >
-          <Text style={[styles.filterLabel, selectedCategory === null && styles.filterLabelActive]}>All</Text>
+          <Text style={[styles.filterLabel, selectedCategory === undefined && styles.filterLabelActive]}>All</Text>
         </TouchableOpacity>
-        {MOCK_CATEGORIES.map((cat) => (
+        {categories.map((cat) => (
           <TouchableOpacity
             key={cat.id}
             style={[styles.filterChip, selectedCategory === cat.id && styles.filterChipActive]}
@@ -78,46 +83,73 @@ export default function MenuScreen() {
         ))}
       </ScrollView>
 
-      {/* Items list */}
+      {/* Liste des items : loading / error / empty / data */}
       <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
-        {isLoading
-          ? [1, 2, 3, 4].map((i) => <Skeleton key={i} height={80} style={{ marginBottom: spacing.md }} />)
-          : filtered.length === 0
-            ? <EmptyState icon="🍽️" title="No items" description="Add your first menu item" actionLabel="Add Item" onAction={openCreate} />
-            : filtered.map((item) => (
-                <Card key={item.id} style={styles.itemCard}>
-                  <View style={styles.itemRow}>
-                    <View style={styles.itemInfo}>
-                      <View style={styles.itemTop}>
-                        <Text style={styles.itemName}>{item.name}</Text>
-                        <Badge label={item.available ? 'Available' : 'Unavailable'} color={item.available ? colors.success : colors.error} />
-                      </View>
-                      {item.description && <Text style={styles.itemDesc}>{item.description}</Text>}
-                    </View>
-                    <View style={styles.itemRight}>
-                      <Text style={styles.price}>€{item.price}</Text>
-                      <Button label="Edit" variant="secondary" size="sm" onPress={() => openEdit(item)} />
-                    </View>
+        {isLoading ? (
+          [1, 2, 3, 4].map((i) => <Skeleton key={i} height={80} style={{ marginBottom: spacing.md }} />)
+        ) : isError ? (
+          <EmptyState icon="⚠️" title="Couldn't load menu" description="Check that the backend is running on :8787" />
+        ) : items.length === 0 ? (
+          <EmptyState icon="🍽️" title="No items" description="Add your first menu item" actionLabel="Add Item" onAction={openCreate} />
+        ) : (
+          items.map((item) => (
+            <Card key={item.id} style={styles.itemCard}>
+              <View style={styles.itemRow}>
+                <View style={styles.itemInfo}>
+                  <View style={styles.itemTop}>
+                    <Text style={styles.itemName}>{item.name}</Text>
+                    <TouchableOpacity onPress={() => toggleAvailability(item)}>
+                      <Badge label={item.available ? 'Available' : 'Unavailable'} color={item.available ? colors.success : colors.error} />
+                    </TouchableOpacity>
                   </View>
-                </Card>
-              ))}
+                  {item.description && <Text style={styles.itemDesc}>{item.description}</Text>}
+                </View>
+                <View style={styles.itemRight}>
+                  <Text style={styles.price}>€{item.price}</Text>
+                  <View style={styles.itemActions}>
+                    <Button label="Edit" variant="secondary" size="sm" onPress={() => openEdit(item)} />
+                    <Button label="Delete" variant="danger" size="sm" onPress={() => deleteItem(item.id)} />
+                  </View>
+                </View>
+              </View>
+            </Card>
+          ))
+        )}
       </ScrollView>
 
-      {/* Create/Edit Modal */}
+      {/* Modal créer / éditer */}
       <Modal visible={showModal} onClose={() => setShowModal(false)} title={editItem ? 'Edit Item' : 'Add Item'}>
         <View style={styles.form}>
           <Controller control={control} name="name" rules={{ required: 'Name is required' }}
             render={({ field }) => <Input label="Name" value={field.value} onChangeText={field.onChange} error={errors.name?.message} />}
           />
-          <Controller control={control} name="price" rules={{ required: 'Price is required' }}
+          <Controller control={control} name="price" rules={{ required: 'Price is required', pattern: { value: /^\d+(\.\d{1,2})?$/, message: 'Invalid price' } }}
             render={({ field }) => <Input label="Price (€)" value={field.value} onChangeText={field.onChange} keyboardType="decimal-pad" error={errors.price?.message} />}
+          />
+          <Controller control={control} name="categoryId" rules={{ required: 'Category is required' }}
+            render={({ field }) => (
+              <View style={styles.catSelect}>
+                <Text style={styles.catLabel}>Category</Text>
+                <View style={styles.catChips}>
+                  {categories.map((cat) => (
+                    <TouchableOpacity
+                      key={cat.id}
+                      style={[styles.filterChip, field.value === cat.id && styles.filterChipActive]}
+                      onPress={() => field.onChange(cat.id)}
+                    >
+                      <Text style={[styles.filterLabel, field.value === cat.id && styles.filterLabelActive]}>{cat.name}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            )}
           />
           <Controller control={control} name="description"
             render={({ field }) => <Input label="Description" value={field.value} onChangeText={field.onChange} multiline />}
           />
           <View style={styles.formActions}>
             <Button label="Cancel" variant="secondary" onPress={() => setShowModal(false)} style={{ flex: 1 }} />
-            <Button label={editItem ? 'Save' : 'Create'} onPress={handleSubmit(onSubmit)} style={{ flex: 1 }} />
+            <Button label={editItem ? 'Save' : 'Create'} onPress={handleSubmit(onSubmit)} loading={isSaving} style={{ flex: 1 }} />
           </View>
         </View>
       </Modal>
@@ -145,6 +177,10 @@ const styles = StyleSheet.create({
   itemDesc: { fontSize: typography.sm, color: colors.textSecondary },
   itemRight: { alignItems: 'flex-end', gap: spacing.sm },
   price: { fontSize: typography.lg, fontWeight: typography.bold, color: colors.textPrimary },
+  itemActions: { flexDirection: 'row', gap: spacing.xs },
   form: { gap: spacing.lg },
   formActions: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.md },
+  catSelect: { gap: spacing.xs },
+  catLabel: { fontSize: typography.sm, fontWeight: typography.medium, color: colors.textPrimary },
+  catChips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
 })

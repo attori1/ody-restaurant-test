@@ -196,13 +196,13 @@ export const usePostApiCustomers = <TError = void,
  * @summary Get customer with order history
  */
 export const getApiCustomersId = (
-    
+    id: string,
  signal?: AbortSignal
 ) => {
       
       
       return axiosInstance<GetApiCustomersId200>(
-      {url: `/api/customers/:id`, method: 'GET', signal
+      {url: `/api/customers/${id}`, method: 'GET', signal
     },
       );
     }
@@ -210,29 +210,29 @@ export const getApiCustomersId = (
 
 
 
-export const getGetApiCustomersIdQueryKey = () => {
+export const getGetApiCustomersIdQueryKey = (id?: string,) => {
     return [
-    `/api/customers/:id`
+    `/api/customers/${id}`
     ] as const;
     }
 
     
-export const getGetApiCustomersIdQueryOptions = <TData = Awaited<ReturnType<typeof getApiCustomersId>>, TError = void>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiCustomersId>>, TError, TData>>, }
+export const getGetApiCustomersIdQueryOptions = <TData = Awaited<ReturnType<typeof getApiCustomersId>>, TError = void>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiCustomersId>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiCustomersIdQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetApiCustomersIdQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiCustomersId>>> = ({ signal }) => getApiCustomersId(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiCustomersId>>> = ({ signal }) => getApiCustomersId(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiCustomersId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiCustomersId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetApiCustomersIdQueryResult = NonNullable<Awaited<ReturnType<typeof getApiCustomersId>>>
@@ -240,7 +240,7 @@ export type GetApiCustomersIdQueryError = void
 
 
 export function useGetApiCustomersId<TData = Awaited<ReturnType<typeof getApiCustomersId>>, TError = void>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiCustomersId>>, TError, TData>> & Pick<
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiCustomersId>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiCustomersId>>,
           TError,
@@ -250,7 +250,7 @@ export function useGetApiCustomersId<TData = Awaited<ReturnType<typeof getApiCus
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetApiCustomersId<TData = Awaited<ReturnType<typeof getApiCustomersId>>, TError = void>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiCustomersId>>, TError, TData>> & Pick<
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiCustomersId>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiCustomersId>>,
           TError,
@@ -260,7 +260,7 @@ export function useGetApiCustomersId<TData = Awaited<ReturnType<typeof getApiCus
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetApiCustomersId<TData = Awaited<ReturnType<typeof getApiCustomersId>>, TError = void>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiCustomersId>>, TError, TData>>, }
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiCustomersId>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -268,11 +268,11 @@ export function useGetApiCustomersId<TData = Awaited<ReturnType<typeof getApiCus
  */
 
 export function useGetApiCustomersId<TData = Awaited<ReturnType<typeof getApiCustomersId>>, TError = void>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiCustomersId>>, TError, TData>>, }
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiCustomersId>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetApiCustomersIdQueryOptions(options)
+  const queryOptions = getGetApiCustomersIdQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

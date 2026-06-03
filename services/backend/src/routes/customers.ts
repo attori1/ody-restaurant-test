@@ -44,7 +44,7 @@ customersRouter.openapi(
 
 customersRouter.openapi(
   createRoute({
-    method: 'get', path: '/:id', tags: ['Customers'],
+    method: 'get', path: '/{id}', tags: ['Customers'],
     summary: 'Get customer with order history',
     request: { params: z.object({ id: z.string() }) },
     responses: {
