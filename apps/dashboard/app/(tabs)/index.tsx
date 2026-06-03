@@ -1,23 +1,13 @@
 import { ScrollView, View, Text, StyleSheet } from 'react-native'
-import { Card, Skeleton } from '../../components/ui'
+import { Card, Skeleton, EmptyState } from '../../components/ui'
 import { colors, spacing, typography } from '../../tokens'
-// Ces hooks seront générés par Orval après pnpm gen:contract.
-// Pour l'instant on simule les données pour que l'app démarre.
+import { useGetApiAnalyticsKpis } from '@ody/api-client'
 
 export default function HomeScreen() {
-  // TODO: remplacer par useGetAnalyticsKpis() après gen:contract
-  const isLoading = false
-  const kpis = {
-    totalOrders: 42,
-    totalRevenue: '1284.50',
-    pendingOrders: 3,
-    todayOrders: 8,
-    todayRevenue: '312.00',
-    popularItems: [
-      { id: '1', name: 'Grilled Salmon', totalSold: 18 },
-      { id: '2', name: 'Beef Burger', totalSold: 14 },
-      { id: '3', name: 'Truffle Pasta', totalSold: 10 },
-    ],
+  const { data: kpis, isLoading, isError } = useGetApiAnalyticsKpis()
+
+  if (isError) {
+    return <EmptyState icon="⚠️" title="Couldn't load dashboard" description="Check that the backend is running on :8787" />
   }
 
   return (
@@ -28,29 +18,39 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.kpiGrid}>
-        <KpiCard label="Total Orders" value={String(kpis.totalOrders)} icon="📋" loading={isLoading} />
-        <KpiCard label="Revenue" value={`€${kpis.totalRevenue}`} icon="💶" loading={isLoading} />
-        <KpiCard label="Pending" value={String(kpis.pendingOrders)} icon="⏳" color={colors.warning} loading={isLoading} />
-        <KpiCard label="Today's Orders" value={String(kpis.todayOrders)} icon="📅" loading={isLoading} />
+        <KpiCard label="Total Orders" value={kpis ? String(kpis.totalOrders) : ''} icon="📋" loading={isLoading} />
+        <KpiCard label="Revenue" value={kpis ? `€${kpis.totalRevenue}` : ''} icon="💶" loading={isLoading} />
+        <KpiCard label="Pending" value={kpis ? String(kpis.pendingOrders) : ''} icon="⏳" color={colors.warning} loading={isLoading} />
+        <KpiCard label="Today's Orders" value={kpis ? String(kpis.todayOrders) : ''} icon="📅" loading={isLoading} />
       </View>
 
       <Card style={styles.section}>
         <Text style={styles.sectionTitle}>🔥 Popular Items</Text>
-        {isLoading
-          ? [1, 2, 3].map((i) => <Skeleton key={i} height={24} style={{ marginBottom: spacing.sm }} />)
-          : kpis.popularItems.map((item, i) => (
-              <View key={item.id} style={styles.popularRow}>
-                <Text style={styles.rank}>#{i + 1}</Text>
-                <Text style={styles.popularName}>{item.name}</Text>
-                <Text style={styles.popularCount}>{item.totalSold} sold</Text>
-              </View>
-            ))}
+        {isLoading ? (
+          [1, 2, 3].map((i) => <Skeleton key={i} height={24} style={{ marginBottom: spacing.sm }} />)
+        ) : !kpis || kpis.popularItems.length === 0 ? (
+          <Text style={styles.muted}>No sales data yet</Text>
+        ) : (
+          kpis.popularItems.map((item, i) => (
+            <View key={item.id} style={styles.popularRow}>
+              <Text style={styles.rank}>#{i + 1}</Text>
+              <Text style={styles.popularName}>{item.name}</Text>
+              <Text style={styles.popularCount}>{item.totalSold} sold</Text>
+            </View>
+          ))
+        )}
       </Card>
 
       <Card style={styles.section}>
         <Text style={styles.sectionTitle}>💶 Today's Revenue</Text>
-        <Text style={styles.bigNumber}>€{kpis.todayRevenue}</Text>
-        <Text style={styles.subNumber}>{kpis.todayOrders} orders today</Text>
+        {isLoading ? (
+          <Skeleton height={40} width={120} />
+        ) : (
+          <>
+            <Text style={styles.bigNumber}>€{kpis?.todayRevenue ?? '0'}</Text>
+            <Text style={styles.subNumber}>{kpis?.todayOrders ?? 0} orders today</Text>
+          </>
+        )}
       </Card>
     </ScrollView>
   )
@@ -90,6 +90,7 @@ const styles = StyleSheet.create({
   kpiLabel: { fontSize: typography.sm, color: colors.textSecondary },
   section: { gap: spacing.md },
   sectionTitle: { fontSize: typography.lg, fontWeight: typography.semibold, color: colors.textPrimary },
+  muted: { fontSize: typography.base, color: colors.textTertiary },
   popularRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.xs },
   rank: { fontSize: typography.sm, fontWeight: typography.bold, color: colors.textTertiary, width: 28 },
   popularName: { flex: 1, fontSize: typography.base, color: colors.textPrimary },

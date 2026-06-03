@@ -1,38 +1,38 @@
 import { useState } from 'react'
-import { ScrollView, View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native'
-import { Card, Button, Modal, EmptyState, Skeleton } from '../../components/ui'
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native'
+import { Card, Modal, EmptyState, Skeleton, StatusBadge } from '../../components/ui'
 import { colors, spacing, typography } from '../../tokens'
-
-const MOCK_CUSTOMERS = [
-  { id: '1', name: 'Alice Martin', email: 'alice@example.com', phone: '+33 6 12 34 56 78', orderCount: 8, totalSpend: '312.50', lastOrderAt: '2024-01-15T14:30:00Z' },
-  { id: '2', name: 'Bob Dupont', email: 'bob@example.com', phone: '+33 6 98 76 54 32', orderCount: 3, totalSpend: '124.00', lastOrderAt: '2024-01-10T12:00:00Z' },
-  { id: '3', name: 'Carol Lemaire', email: 'carol@example.com', phone: '+33 7 11 22 33 44', orderCount: 1, totalSpend: '30.00', lastOrderAt: '2024-01-05T19:00:00Z' },
-]
+import { useGetApiCustomers, useGetApiCustomersId } from '@ody/api-client'
 
 export default function CrmScreen() {
-  const [selected, setSelected] = useState<(typeof MOCK_CUSTOMERS)[0] | null>(null)
-  const isLoading = false
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const { data: customers, isLoading, isError } = useGetApiCustomers()
+  const { data: detail, isLoading: detailLoading } = useGetApiCustomersId(selectedId ?? '', {
+    query: { enabled: !!selectedId },
+  })
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>CRM</Text>
-        <Text style={styles.subtitle}>{MOCK_CUSTOMERS.length} customers</Text>
+        {customers && <Text style={styles.subtitle}>{customers.length} customers</Text>}
       </View>
 
       {isLoading ? (
         <View style={styles.list}>
           {[1, 2, 3].map((i) => <Skeleton key={i} height={80} style={{ marginBottom: spacing.md }} />)}
         </View>
-      ) : MOCK_CUSTOMERS.length === 0 ? (
-        <EmptyState icon="👥" title="No customers yet" description="Customers will appear here once orders are placed" />
+      ) : isError ? (
+        <EmptyState icon="⚠️" title="Couldn't load customers" description="Check that the backend is running" />
+      ) : !customers || customers.length === 0 ? (
+        <EmptyState icon="👥" title="No customers yet" description="Customers appear here once orders are placed" />
       ) : (
         <FlatList
-          data={MOCK_CUSTOMERS}
+          data={customers}
           keyExtractor={(c) => c.id}
           contentContainerStyle={styles.list}
           renderItem={({ item: customer }) => (
-            <TouchableOpacity onPress={() => setSelected(customer)}>
+            <TouchableOpacity onPress={() => setSelectedId(customer.id)} activeOpacity={0.7}>
               <Card style={styles.customerCard}>
                 <View style={styles.customerRow}>
                   <View style={styles.avatar}>
@@ -53,20 +53,33 @@ export default function CrmScreen() {
         />
       )}
 
-      {selected && (
-        <Modal visible={!!selected} onClose={() => setSelected(null)} title={selected.name}>
+      <Modal visible={!!selectedId} onClose={() => setSelectedId(null)} title={detail?.name ?? 'Customer'}>
+        {detailLoading || !detail ? (
+          <View style={{ gap: spacing.md }}><Skeleton height={20} /><Skeleton height={20} /><Skeleton height={80} /></View>
+        ) : (
           <View style={styles.detail}>
-            <View style={styles.detailRow}><Text style={styles.label}>Email</Text><Text style={styles.value}>{selected.email}</Text></View>
-            <View style={styles.detailRow}><Text style={styles.label}>Phone</Text><Text style={styles.value}>{selected.phone ?? '—'}</Text></View>
-            <View style={styles.detailRow}><Text style={styles.label}>Orders</Text><Text style={styles.value}>{selected.orderCount}</Text></View>
-            <View style={styles.detailRow}><Text style={styles.label}>Total Spend</Text><Text style={[styles.value, styles.bold]}>€{selected.totalSpend}</Text></View>
-            <View style={styles.detailRow}>
-              <Text style={styles.label}>Last Order</Text>
-              <Text style={styles.value}>{selected.lastOrderAt ? new Date(selected.lastOrderAt).toLocaleDateString() : '—'}</Text>
+            <View style={styles.detailRow}><Text style={styles.label}>Email</Text><Text style={styles.value}>{detail.email}</Text></View>
+            <View style={styles.detailRow}><Text style={styles.label}>Phone</Text><Text style={styles.value}>{detail.phone ?? '—'}</Text></View>
+            <View style={styles.detailRow}><Text style={styles.label}>Orders</Text><Text style={styles.value}>{detail.orderCount}</Text></View>
+            <View style={styles.detailRow}><Text style={styles.label}>Total Spend</Text><Text style={[styles.value, styles.bold]}>€{detail.totalSpend}</Text></View>
+
+            <View style={styles.ordersBlock}>
+              <Text style={styles.ordersTitle}>Recent Orders</Text>
+              {detail.recentOrders.length === 0 ? (
+                <Text style={styles.muted}>No orders yet</Text>
+              ) : (
+                detail.recentOrders.map((order) => (
+                  <View key={order.id} style={styles.orderLine}>
+                    <Text style={styles.orderId}>#{order.id.slice(-6).toUpperCase()}</Text>
+                    <StatusBadge status={order.status} />
+                    <Text style={styles.orderAmount}>€{order.totalAmount}</Text>
+                  </View>
+                ))
+              )}
             </View>
           </View>
-        </Modal>
-      )}
+        )}
+      </Modal>
     </View>
   )
 }
@@ -92,4 +105,10 @@ const styles = StyleSheet.create({
   label: { fontSize: typography.sm, color: colors.textSecondary },
   value: { fontSize: typography.base, color: colors.textPrimary },
   bold: { fontWeight: typography.bold },
+  ordersBlock: { gap: spacing.sm, paddingTop: spacing.md, borderTopWidth: 1, borderTopColor: colors.border },
+  ordersTitle: { fontSize: typography.sm, fontWeight: typography.semibold, color: colors.textSecondary, textTransform: 'uppercase' },
+  muted: { fontSize: typography.base, color: colors.textTertiary },
+  orderLine: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  orderId: { fontSize: typography.sm, fontWeight: typography.semibold, color: colors.textPrimary, width: 80 },
+  orderAmount: { fontSize: typography.base, color: colors.textPrimary, marginLeft: 'auto' },
 })
