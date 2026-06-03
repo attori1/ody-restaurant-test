@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native'
 import { Card, StatusBadge, Button, EmptyState, Skeleton, Modal } from '../../components/ui'
 import { colors, spacing, typography, radius } from '../../tokens'
-
-type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled'
+import { useOrders, useOrderDetail, type OrderStatus } from '../../hooks/useOrders'
 
 const STATUS_FILTERS: { label: string; value: OrderStatus | 'all' }[] = [
   { label: 'All', value: 'all' },
@@ -15,33 +14,14 @@ const STATUS_FILTERS: { label: string; value: OrderStatus | 'all' }[] = [
   { label: 'Cancelled', value: 'cancelled' },
 ]
 
-const MOCK_ORDERS = [
-  { id: 'ord-1', status: 'pending' as OrderStatus, type: 'dine_in', totalAmount: '46.50', createdAt: new Date().toISOString(), customer: { name: 'Alice Martin' }, notes: 'Window table please' },
-  { id: 'ord-2', status: 'confirmed' as OrderStatus, type: 'takeaway', totalAmount: '46.00', createdAt: new Date().toISOString(), customer: { name: 'Bob Dupont' }, notes: null },
-  { id: 'ord-3', status: 'preparing' as OrderStatus, type: 'dine_in', totalAmount: '30.00', createdAt: new Date().toISOString(), customer: null, notes: null },
-  { id: 'ord-4', status: 'delivered' as OrderStatus, type: 'delivery', totalAmount: '55.00', createdAt: new Date().toISOString(), customer: { name: 'Carol Lemaire' }, notes: null },
-]
-
-const NEXT_STATUS: Partial<Record<OrderStatus, OrderStatus>> = {
-  pending: 'confirmed',
-  confirmed: 'preparing',
-  preparing: 'ready',
-  ready: 'delivered',
-}
-
-const ACTION_LABELS: Partial<Record<OrderStatus, string>> = {
-  pending: 'Confirm',
-  confirmed: 'Start Preparing',
-  preparing: 'Mark Ready',
-  ready: 'Mark Delivered',
-}
-
 export default function OrdersScreen() {
   const [filter, setFilter] = useState<OrderStatus | 'all'>('all')
-  const [selectedOrder, setSelectedOrder] = useState<(typeof MOCK_ORDERS)[0] | null>(null)
-  const isLoading = false
+  const [selectedId, setSelectedId] = useState<string | null>(null)
 
-  const filtered = filter === 'all' ? MOCK_ORDERS : MOCK_ORDERS.filter((o) => o.status === filter)
+  const { orders, isLoading, isError, getNextAction, updateStatus, isUpdating } = useOrders(
+    filter === 'all' ? undefined : filter
+  )
+  const { data: detail, isLoading: detailLoading } = useOrderDetail(selectedId)
 
   return (
     <View style={styles.container}>
@@ -49,7 +29,7 @@ export default function OrdersScreen() {
         <Text style={styles.title}>Orders</Text>
       </View>
 
-      {/* Status filter */}
+      {/* Filtres par statut */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow} contentContainerStyle={styles.filterContent}>
         {STATUS_FILTERS.map((f) => (
           <TouchableOpacity
@@ -62,66 +42,89 @@ export default function OrdersScreen() {
         ))}
       </ScrollView>
 
-      {/* Orders list */}
+      {/* Liste */}
       {isLoading ? (
         <View style={styles.list}>
-          {[1, 2, 3].map((i) => <Skeleton key={i} height={100} style={{ marginBottom: spacing.md, marginHorizontal: spacing.lg }} />)}
+          {[1, 2, 3].map((i) => <Skeleton key={i} height={120} style={{ marginBottom: spacing.md }} />)}
         </View>
-      ) : filtered.length === 0 ? (
-        <EmptyState icon="📋" title="No orders" description={`No ${filter === 'all' ? '' : filter} orders`} />
+      ) : isError ? (
+        <EmptyState icon="⚠️" title="Couldn't load orders" description="Check that the backend is running" />
+      ) : orders.length === 0 ? (
+        <EmptyState icon="📋" title="No orders" description={filter === 'all' ? 'No orders yet' : `No ${filter} orders`} />
       ) : (
         <FlatList
-          data={filtered}
+          data={orders}
           keyExtractor={(o) => o.id}
           contentContainerStyle={styles.list}
-          renderItem={({ item: order }) => (
-            <TouchableOpacity onPress={() => setSelectedOrder(order)}>
-              <Card style={styles.orderCard}>
-                <View style={styles.orderTop}>
-                  <Text style={styles.orderId}>#{order.id.slice(-6).toUpperCase()}</Text>
-                  <StatusBadge status={order.status} />
-                </View>
-                <View style={styles.orderMeta}>
-                  <Text style={styles.metaText}>👤 {order.customer?.name ?? 'Anonymous'}</Text>
-                  <Text style={styles.metaText}>🛍️ {order.type.replace('_', ' ')}</Text>
-                  <Text style={styles.amount}>€{order.totalAmount}</Text>
-                </View>
-                {order.notes && <Text style={styles.notes}>📝 {order.notes}</Text>}
-                {NEXT_STATUS[order.status] && (
-                  <View style={styles.actionRow}>
-                    <Button
-                      label={ACTION_LABELS[order.status]!}
-                      size="sm"
-                      onPress={() => {
-                        // TODO: appeler useUpdateOrderStatus (hook Orval)
-                        console.log('transition', order.id, NEXT_STATUS[order.status])
-                      }}
-                    />
-                    {order.status === 'pending' && (
-                      <Button label="Cancel" size="sm" variant="danger"
-                        onPress={() => console.log('cancel', order.id)}
-                      />
-                    )}
+          renderItem={({ item: order }) => {
+            const nextAction = getNextAction(order.status)
+            return (
+              <TouchableOpacity onPress={() => setSelectedId(order.id)} activeOpacity={0.7}>
+                <Card style={styles.orderCard}>
+                  <View style={styles.orderTop}>
+                    <Text style={styles.orderId}>#{order.id.slice(-6).toUpperCase()}</Text>
+                    <StatusBadge status={order.status} />
                   </View>
-                )}
-              </Card>
-            </TouchableOpacity>
-          )}
+                  <View style={styles.orderMeta}>
+                    <Text style={styles.metaText}>🛍️ {order.type.replace('_', ' ')}</Text>
+                    <Text style={styles.amount}>€{order.totalAmount}</Text>
+                  </View>
+                  {order.notes && <Text style={styles.notes}>📝 {order.notes}</Text>}
+                  {(nextAction || order.status === 'pending') && (
+                    <View style={styles.actionRow}>
+                      {nextAction && (
+                        <Button
+                          label={nextAction.label}
+                          size="sm"
+                          loading={isUpdating}
+                          onPress={() => updateStatus(order.id, nextAction.status)}
+                        />
+                      )}
+                      {order.status === 'pending' && (
+                        <Button label="Cancel" size="sm" variant="danger"
+                          onPress={() => updateStatus(order.id, 'cancelled')}
+                        />
+                      )}
+                    </View>
+                  )}
+                </Card>
+              </TouchableOpacity>
+            )
+          }}
         />
       )}
 
-      {/* Order detail modal */}
-      {selectedOrder && (
-        <Modal visible={!!selectedOrder} onClose={() => setSelectedOrder(null)} title={`Order #${selectedOrder.id.slice(-6).toUpperCase()}`}>
-          <View style={styles.detail}>
-            <View style={styles.detailRow}><Text style={styles.detailLabel}>Status</Text><StatusBadge status={selectedOrder.status} /></View>
-            <View style={styles.detailRow}><Text style={styles.detailLabel}>Type</Text><Text style={styles.detailValue}>{selectedOrder.type.replace('_', ' ')}</Text></View>
-            <View style={styles.detailRow}><Text style={styles.detailLabel}>Customer</Text><Text style={styles.detailValue}>{selectedOrder.customer?.name ?? 'Anonymous'}</Text></View>
-            <View style={styles.detailRow}><Text style={styles.detailLabel}>Total</Text><Text style={[styles.detailValue, styles.totalValue]}>€{selectedOrder.totalAmount}</Text></View>
-            {selectedOrder.notes && <View style={styles.detailRow}><Text style={styles.detailLabel}>Notes</Text><Text style={styles.detailValue}>{selectedOrder.notes}</Text></View>}
+      {/* Détail commande — chargé via useOrderDetail */}
+      <Modal visible={!!selectedId} onClose={() => setSelectedId(null)} title={detail ? `Order #${detail.id.slice(-6).toUpperCase()}` : 'Order'}>
+        {detailLoading || !detail ? (
+          <View style={{ gap: spacing.md }}>
+            <Skeleton height={20} /><Skeleton height={20} /><Skeleton height={60} />
           </View>
-        </Modal>
-      )}
+        ) : (
+          <View style={styles.detail}>
+            <View style={styles.detailRow}><Text style={styles.detailLabel}>Status</Text><StatusBadge status={detail.status} /></View>
+            <View style={styles.detailRow}><Text style={styles.detailLabel}>Type</Text><Text style={styles.detailValue}>{detail.type.replace('_', ' ')}</Text></View>
+            <View style={styles.detailRow}><Text style={styles.detailLabel}>Customer</Text><Text style={styles.detailValue}>{detail.customer?.name ?? 'Anonymous'}</Text></View>
+
+            <View style={styles.itemsBlock}>
+              <Text style={styles.itemsTitle}>Items</Text>
+              {detail.items.map((it) => (
+                <View key={it.id} style={styles.lineItem}>
+                  <Text style={styles.lineQty}>{it.quantity}×</Text>
+                  <Text style={styles.lineName}>{it.menuItem.name}</Text>
+                  <Text style={styles.linePrice}>€{it.subtotal}</Text>
+                </View>
+              ))}
+            </View>
+
+            <View style={[styles.detailRow, styles.totalRow]}>
+              <Text style={styles.totalLabel}>Total</Text>
+              <Text style={styles.totalValue}>€{detail.totalAmount}</Text>
+            </View>
+            {detail.notes && <View style={styles.detailRow}><Text style={styles.detailLabel}>Notes</Text><Text style={styles.detailValue}>{detail.notes}</Text></View>}
+          </View>
+        )}
+      </Modal>
     </View>
   )
 }
@@ -149,5 +152,13 @@ const styles = StyleSheet.create({
   detailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   detailLabel: { fontSize: typography.sm, color: colors.textSecondary },
   detailValue: { fontSize: typography.base, color: colors.textPrimary },
-  totalValue: { fontWeight: typography.bold, color: colors.primary },
+  itemsBlock: { gap: spacing.sm, paddingTop: spacing.md, borderTopWidth: 1, borderTopColor: colors.border },
+  itemsTitle: { fontSize: typography.sm, fontWeight: typography.semibold, color: colors.textSecondary, textTransform: 'uppercase' },
+  lineItem: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  lineQty: { fontSize: typography.base, fontWeight: typography.semibold, color: colors.textSecondary, width: 32 },
+  lineName: { flex: 1, fontSize: typography.base, color: colors.textPrimary },
+  linePrice: { fontSize: typography.base, color: colors.textPrimary },
+  totalRow: { paddingTop: spacing.md, borderTopWidth: 1, borderTopColor: colors.border },
+  totalLabel: { fontSize: typography.lg, fontWeight: typography.semibold, color: colors.textPrimary },
+  totalValue: { fontSize: typography.xl, fontWeight: typography.bold, color: colors.primary },
 })
