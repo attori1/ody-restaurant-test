@@ -1,0 +1,25 @@
+{
+  "name": "ody-restaurant",
+  "private": true,
+  "scripts": {
+    "dev:dashboard": "turbo run dev --filter=dashboard",
+    "dev:backend": "turbo run dev --filter=backend",
+    "gen:contract": "turbo run gen:contract --filter=api-client",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "db:push": "turbo run db:push --filter=backend",
+    "db:seed": "turbo run db:seed --filter=backend"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2",
+    "prettier": "^3.4.2"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "packageManager": "pnpm@11.4.0"
+}

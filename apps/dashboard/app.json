@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "Ody Restaurant",
+    "slug": "ody-restaurant",
+    "version": "1.0.0",
+    "scheme": "ody-restaurant",
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/favicon.png"
+    },
+    "platforms": ["web"],
+    "plugins": ["expo-router"]
+  }
+}
