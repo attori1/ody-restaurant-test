@@ -3,6 +3,7 @@ import { eq, inArray, desc, and } from 'drizzle-orm'
 import { createSelectSchema } from 'drizzle-zod'
 import { orders, orderItems, menuItems, customers } from '../db/schema'
 import { createDb } from '../db'
+import { canTransition, validateAndPriceOrder, VALID_TRANSITIONS, type OrderStatus } from '../lib/orders-logic'
 import type { Env } from '../index'
 
 const OrderSchema = createSelectSchema(orders)
@@ -17,17 +18,6 @@ const CreateOrderSchema = z.object({
     quantity: z.number().int().min(1),
   })).min(1),
 })
-
-// Machine à états : définit quelles transitions sont autorisées.
-// Le client ne peut pas changer le statut librement — le serveur valide.
-const VALID_TRANSITIONS: Record<string, string[]> = {
-  pending:   ['confirmed', 'cancelled'],
-  confirmed: ['preparing', 'cancelled'],
-  preparing: ['ready'],
-  ready:     ['delivered'],
-  delivered: [],
-  cancelled: [],
-}
 
 const OrderWithItemsSchema = OrderSchema.extend({
   items: z.array(OrderItemSchema.extend({ menuItem: createSelectSchema(menuItems) })),
@@ -119,40 +109,22 @@ ordersRouter.openapi(
     const menuItemIds = body.items.map((i) => i.menuItemId)
     const foundItems = await db.select().from(menuItems).where(inArray(menuItems.id, menuItemIds))
 
-    // Valider existence et disponibilité
-    for (const reqItem of body.items) {
-      const menuItem = foundItems.find((m) => m.id === reqItem.menuItemId)
-      if (!menuItem) return c.json({ error: `Menu item ${reqItem.menuItemId} not found` }, 400)
-      if (!menuItem.available) return c.json({ error: `"${menuItem.name}" is not available` }, 400)
+    // Valider + calculer le total via la logique métier pure (testée unitairement)
+    const result = validateAndPriceOrder(body.items, foundItems)
+    if (!result.ok) {
+      return c.json({ error: result.error }, 400)
     }
-
-    // Calculer le total côté serveur — jamais côté client
-    const totalAmount = body.items
-      .reduce((sum, reqItem) => {
-        const menuItem = foundItems.find((m) => m.id === reqItem.menuItemId)!
-        return sum + parseFloat(menuItem.price) * reqItem.quantity
-      }, 0)
-      .toFixed(2)
 
     const [order] = await db.insert(orders).values({
       customerId: body.customerId,
       type: body.type,
       notes: body.notes,
-      totalAmount,
+      totalAmount: result.totalAmount,
       status: 'pending',
     }).returning()
 
     await db.insert(orderItems).values(
-      body.items.map((reqItem) => {
-        const menuItem = foundItems.find((m) => m.id === reqItem.menuItemId)!
-        return {
-          orderId: order.id,
-          menuItemId: reqItem.menuItemId,
-          quantity: reqItem.quantity,
-          unitPrice: menuItem.price,
-          subtotal: (parseFloat(menuItem.price) * reqItem.quantity).toFixed(2),
-        }
-      })
+      result.lines.map((line) => ({ orderId: order.id, ...line }))
     )
 
     return c.json(order, 201)
@@ -187,8 +159,8 @@ ordersRouter.openapi(
     const [order] = await db.select().from(orders).where(eq(orders.id, id))
     if (!order) return c.json({ error: 'Order not found' }, 404)
 
-    const allowed = VALID_TRANSITIONS[order.status] ?? []
-    if (!allowed.includes(newStatus)) {
+    if (!canTransition(order.status as OrderStatus, newStatus as OrderStatus)) {
+      const allowed = VALID_TRANSITIONS[order.status as OrderStatus] ?? []
       return c.json({
         error: `Cannot transition from "${order.status}" to "${newStatus}". Allowed: ${allowed.join(', ') || 'none'}`,
       }, 400)

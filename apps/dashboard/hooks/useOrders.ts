@@ -4,25 +4,11 @@ import {
   useGetApiOrdersId,
   usePostApiOrdersIdStatus,
   getGetApiOrdersQueryKey,
-  getGetApiOrdersIdQueryKey,
-  type GetApiOrders200ItemStatus,
   type PostApiOrdersIdStatusBodyStatus,
 } from '@ody/api-client'
+import { getNextAction, type OrderStatus } from '../lib/order-ui'
 
-export type OrderStatus = GetApiOrders200ItemStatus
-
-/**
- * Transitions proposées côté UI pour le bouton d'action principal.
- * ⚠️ Ce n'est PAS la source de vérité : le backend valide réellement la transition
- * (voir VALID_TRANSITIONS dans services/backend/src/routes/orders.ts).
- * Ici on ne fait que proposer l'action « suivante » naturelle dans le flux.
- */
-const NEXT_ACTION: Partial<Record<OrderStatus, { status: PostApiOrdersIdStatusBodyStatus; label: string }>> = {
-  pending: { status: 'confirmed', label: 'Confirm' },
-  confirmed: { status: 'preparing', label: 'Start Preparing' },
-  preparing: { status: 'ready', label: 'Mark Ready' },
-  ready: { status: 'delivered', label: 'Mark Delivered' },
-}
+export type { OrderStatus }
 
 export function useOrders(statusFilter?: OrderStatus) {
   const queryClient = useQueryClient()
@@ -42,7 +28,7 @@ export function useOrders(statusFilter?: OrderStatus) {
     orders: ordersQuery.data ?? [],
     isLoading: ordersQuery.isLoading,
     isError: ordersQuery.isError,
-    getNextAction: (status: OrderStatus) => NEXT_ACTION[status],
+    getNextAction,
     updateStatus: (id: string, status: PostApiOrdersIdStatusBodyStatus) =>
       statusMutation.mutateAsync({ id, data: { status } }),
     isUpdating: statusMutation.isPending,

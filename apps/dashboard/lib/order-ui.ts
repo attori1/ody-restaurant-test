@@ -1,0 +1,31 @@
+/**
+ * Logique de présentation pure pour les commandes (aucun import RN/réseau).
+ * Détermine l'action « suivante » proposée dans l'UI selon le statut.
+ *
+ * ⚠️ Ce n'est qu'un confort d'UI : la validation réelle des transitions
+ * est faite par le backend (services/backend/src/lib/orders-logic.ts).
+ */
+
+export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled'
+export type TransitionStatus = 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled'
+
+export interface NextAction {
+  status: TransitionStatus
+  label: string
+}
+
+const NEXT_ACTION: Partial<Record<OrderStatus, NextAction>> = {
+  pending: { status: 'confirmed', label: 'Confirm' },
+  confirmed: { status: 'preparing', label: 'Start Preparing' },
+  preparing: { status: 'ready', label: 'Mark Ready' },
+  ready: { status: 'delivered', label: 'Mark Delivered' },
+}
+
+export function getNextAction(status: OrderStatus): NextAction | undefined {
+  return NEXT_ACTION[status]
+}
+
+/** Vrai si la commande peut encore être annulée depuis l'UI. */
+export function isCancellable(status: OrderStatus): boolean {
+  return status === 'pending' || status === 'confirmed'
+}
