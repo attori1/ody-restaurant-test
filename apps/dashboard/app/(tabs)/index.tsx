@@ -1,9 +1,11 @@
 import { ScrollView, View, Text, StyleSheet } from 'react-native'
-import { Card, Skeleton, EmptyState } from '../../components/ui'
+import { useRouter } from 'expo-router'
+import { Card, Skeleton, EmptyState, Button } from '../../components/ui'
 import { colors, spacing, typography } from '../../tokens'
 import { useGetApiAnalyticsKpis } from '@ody/api-client'
 
 export default function HomeScreen() {
+  const router = useRouter()
   const { data: kpis, isLoading, isError } = useGetApiAnalyticsKpis()
 
   if (isError) {
@@ -13,8 +15,13 @@ export default function HomeScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.greeting}>Good morning 👋</Text>
-        <Text style={styles.subtitle}>Here's what's happening today</Text>
+        <View style={styles.headerRow}>
+          <View style={styles.headerText}>
+            <Text style={styles.greeting}>Good morning 👋</Text>
+            <Text style={styles.subtitle}>Here's what's happening today</Text>
+          </View>
+          <Button label="Design System" variant="secondary" size="sm" onPress={() => router.push('/ui-library')} />
+        </View>
       </View>
 
       <View style={styles.kpiGrid}>
@@ -80,7 +87,9 @@ function KpiCard({ label, value, icon, color, loading }: {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, gap: spacing.lg },
-  header: { gap: spacing.xs, paddingVertical: spacing.md },
+  header: { paddingVertical: spacing.md },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: spacing.md },
+  headerText: { gap: spacing.xs, flex: 1 },
   greeting: { fontSize: typography['2xl'], fontWeight: typography.bold, color: colors.textPrimary },
   subtitle: { fontSize: typography.base, color: colors.textSecondary },
   kpiGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
