@@ -32,6 +32,12 @@ importers:
       '@ody/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
+      '@ody/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@ody/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@tanstack/react-query':
         specifier: ^5.62.16
         version: 5.100.14(react@18.3.1)
@@ -112,6 +118,30 @@ importers:
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
+
+  packages/shared:
+    devDependencies:
+      '@types/react':
+        specifier: ~18.3.12
+        version: 18.3.30
+      react:
+        specifier: 18.3.1
+        version: 18.3.1
+      react-native:
+        specifier: 0.76.6
+        version: 0.76.6(@babel/core@7.29.7)(@babel/preset-env@7.29.7(@babel/core@7.29.7))(@types/react@18.3.30)(react@18.3.1)
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/types:
+    devDependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@25.9.1)(jsdom@20.0.3)(lightningcss@1.27.0)(terser@5.48.0)
 
   services/backend:
     dependencies:

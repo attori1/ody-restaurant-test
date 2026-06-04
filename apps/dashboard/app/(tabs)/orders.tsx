@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native'
-import { Card, StatusBadge, Button, EmptyState, Skeleton, Modal } from '../../components/ui'
-import { colors, spacing, typography, radius } from '../../tokens'
+import { Card, StatusBadge, Button, EmptyState, Skeleton, Modal } from '@ody/shared'
+import { colors, spacing, typography, radius } from '@ody/shared'
 import { useOrders, useOrderDetail, type OrderStatus } from '../../hooks/useOrders'
 
 const STATUS_FILTERS: { label: string; value: OrderStatus | 'all' }[] = [

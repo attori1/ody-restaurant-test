@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { ScrollView, View, Text, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
-import { Button, Badge, StatusBadge, Card, Input, Skeleton, Modal, EmptyState } from '../components/ui'
-import { colors, spacing, radius, typography, shadows } from '../tokens'
+import { Button, Badge, StatusBadge, Card, Input, Skeleton, Modal, EmptyState } from '@ody/shared'
+import { colors, spacing, radius, typography, shadows } from '@ody/shared'
 
 export default function UiLibraryScreen() {
   const router = useRouter()

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { ScrollView, View, Text, StyleSheet, Switch } from 'react-native'
 import { useForm, Controller } from 'react-hook-form'
-import { Card, Button, Input, Skeleton, EmptyState } from '../../components/ui'
-import { colors, spacing, typography } from '../../tokens'
+import { Card, Button, Input, Skeleton, EmptyState } from '@ody/shared'
+import { colors, spacing, typography } from '@ody/shared'
 import { useSettings } from '../../hooks/useSettings'
 
 interface FormValues {

@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router'
 import { Text } from 'react-native'
-import { colors, typography } from '../../tokens'
+import { colors, typography } from '@ody/shared'
 
 export default function TabLayout() {
   return (

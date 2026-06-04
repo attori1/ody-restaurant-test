@@ -6,5 +6,9 @@ module.exports = {
   transform: {
     '^.+\\.(ts|tsx)$': ['babel-jest', { presets: ['babel-preset-expo'] }],
   },
+  // Résout les packages du workspace vers leur source TS pour qu'ils soient transformés.
+  moduleNameMapper: {
+    '^@ody/types$': '<rootDir>/../../packages/types/src/index.ts',
+  },
   testMatch: ['**/__tests__/**/*.test.{ts,tsx}'],
 }

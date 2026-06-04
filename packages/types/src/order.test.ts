@@ -1,4 +1,5 @@
-import { getNextAction, isCancellable } from '../lib/order-ui'
+import { describe, it, expect } from 'vitest'
+import { getNextAction, isCancellable } from './order'
 
 describe('getNextAction (UI flow)', () => {
   it('propose la bonne action pour chaque étape active', () => {

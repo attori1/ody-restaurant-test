@@ -1,7 +1,7 @@
 import { ScrollView, View, Text, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
-import { Card, Skeleton, EmptyState, Button } from '../../components/ui'
-import { colors, spacing, typography } from '../../tokens'
+import { Card, Skeleton, EmptyState, Button } from '@ody/shared'
+import { colors, spacing, typography } from '@ody/shared'
 import { useGetApiAnalyticsKpis } from '@ody/api-client'
 
 export default function HomeScreen() {

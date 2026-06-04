@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Animated, StyleSheet, type ViewStyle } from 'react-native'
-import { colors, radius } from '../../tokens'
+import { colors, radius } from '../tokens'
 
 interface SkeletonProps {
   width?: number | string

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { useForm, Controller } from 'react-hook-form'
-import { Card, Button, Badge, Modal, Input, EmptyState, Skeleton } from '../../components/ui'
-import { colors, spacing, typography, radius } from '../../tokens'
+import { Card, Button, Badge, Modal, Input, EmptyState, Skeleton } from '@ody/shared'
+import { colors, spacing, typography, radius } from '@ody/shared'
 import { useMenu } from '../../hooks/useMenu'
 import type { GetApiMenuItems200Item } from '@ody/api-client'
 

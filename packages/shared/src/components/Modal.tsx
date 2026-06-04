@@ -1,5 +1,5 @@
 import { Modal as RNModal, View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native'
-import { colors, spacing, radius, typography, shadows } from '../../tokens'
+import { colors, spacing, radius, typography, shadows } from '../tokens'
 
 interface ModalProps {
   visible: boolean

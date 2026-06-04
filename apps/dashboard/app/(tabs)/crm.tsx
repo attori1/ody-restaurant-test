@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native'
-import { Card, Modal, EmptyState, Skeleton, StatusBadge } from '../../components/ui'
-import { colors, spacing, typography } from '../../tokens'
+import { Card, Modal, EmptyState, Skeleton, StatusBadge } from '@ody/shared'
+import { colors, spacing, typography } from '@ody/shared'
 import { useGetApiCustomers, useGetApiCustomersId } from '@ody/api-client'
 
 export default function CrmScreen() {

@@ -6,7 +6,7 @@ import {
   getGetApiOrdersQueryKey,
   type PostApiOrdersIdStatusBodyStatus,
 } from '@ody/api-client'
-import { getNextAction, type OrderStatus } from '../lib/order-ui'
+import { getNextAction, type OrderStatus } from '@ody/types'
 
 export type { OrderStatus }
 

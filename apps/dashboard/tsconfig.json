@@ -6,6 +6,12 @@
     "paths": {
       "@ody/api-client": [
         "../../packages/api-client/src/index.ts"
+      ],
+      "@ody/shared": [
+        "../../packages/shared/src/index.ts"
+      ],
+      "@ody/types": [
+        "../../packages/types/src/index.ts"
       ]
     }
   },

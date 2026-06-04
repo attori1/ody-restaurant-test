@@ -1,5 +1,5 @@
 import { View, StyleSheet, type ViewStyle } from 'react-native'
-import { colors, radius, shadows, spacing } from '../../tokens'
+import { colors, radius, shadows, spacing } from '../tokens'
 
 interface CardProps {
   children: React.ReactNode

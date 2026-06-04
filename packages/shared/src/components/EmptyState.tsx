@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native'
-import { colors, spacing, typography } from '../../tokens'
+import { colors, spacing, typography } from '../tokens'
 import { Button } from './Button'
 
 interface EmptyStateProps {
