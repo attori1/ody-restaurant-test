@@ -135,14 +135,16 @@ Trois règles que je tenais à appliquer côté serveur :
 
 Le design system vit dans le package partagé `@ody/shared`. Des tokens centralisés
 ([packages/shared/src/tokens](packages/shared/src/tokens)) pour les couleurs, la
-typographie, les espacements, les arrondis et les ombres. Les primitives réutilisables
-sont dans [packages/shared/src/components](packages/shared/src/components) : Button, Input,
-Badge/StatusBadge, Card, Modal, Skeleton, EmptyState — avec leurs états hover / focus /
-pressed / disabled.
+typographie, les espacements, les arrondis, les ombres et les règles de layout/grille.
+Les primitives réutilisables sont dans
+[packages/shared/src/components](packages/shared/src/components) : Button, Input, Select,
+Chip, Badge/StatusBadge, Card, Modal, Skeleton, EmptyState, et un système de toasts
+(`ToastProvider` + `useToast`) — avec leurs états hover / focus / pressed / disabled.
 
 Il y a aussi une route **Design System** dédiée
 ([/ui-library](apps/dashboard/app/ui-library.tsx), accessible depuis l'en-tête de
-l'accueil) qui présente tous les tokens, les surfaces et les états des composants.
+l'accueil) qui présente tous les tokens, les surfaces, les règles de grille et les états
+des composants.
 
 ---
 
@@ -187,9 +189,6 @@ Orders** (les parties les plus valorisées dans l'énoncé), et j'ai assumé que
 
 - **Web uniquement.** Le natif est un bonus dans l'énoncé, donc l'app vise le web. Les
   primitives RN sont compatibles natif, mais je ne les ai pas testées sur device.
-- **La création de commande depuis le dashboard** est gérée côté backend (validée,
-  chiffrée, testée), mais l'UI se concentre sur le flux opérationnel (liste / filtres /
-  détail / statut). Un écran de création de commande serait la prochaine étape.
 - **Les tests de rendu des composants frontend** ont été mis de côté au profit de tests
   de logique pure : faire tourner le rendu React Native sous `jest-expo` dans un monorepo
   pnpm demande une grosse config de transformation pour peu de valeur. J'ai préféré

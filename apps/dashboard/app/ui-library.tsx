@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ScrollView, View, Text, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
-import { Button, Badge, StatusBadge, Card, Input, Select, Skeleton, Modal, EmptyState, useToast } from '@ody/shared'
+import { Button, Badge, StatusBadge, Card, Chip, Input, Select, Skeleton, Modal, EmptyState, useToast } from '@ody/shared'
 import { colors, spacing, radius, typography, shadows, layout } from '@ody/shared'
 
 export default function UiLibraryScreen() {
@@ -136,6 +136,12 @@ export default function UiLibraryScreen() {
           <StatusBadge status="ready" />
           <StatusBadge status="delivered" />
           <StatusBadge status="cancelled" />
+        </View>
+        <Text style={styles.groupLabel}>Chips / filters (hover + active)</Text>
+        <View style={styles.componentRow}>
+          <Chip label="All" active onPress={() => {}} />
+          <Chip label="Pending" onPress={() => {}} />
+          <Chip label="Delivered" onPress={() => {}} />
         </View>
       </Section>
 

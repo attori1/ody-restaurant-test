@@ -1,6 +1,7 @@
 export { Button } from './Button'
 export { Badge, StatusBadge } from './Badge'
 export { Card } from './Card'
+export { Chip } from './Chip'
 export { Input } from './Input'
 export { Select, type SelectOption } from './Select'
 export { Skeleton } from './Skeleton'

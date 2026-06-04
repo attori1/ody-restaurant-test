@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native'
 import axios from 'axios'
-import { Card, StatusBadge, Button, EmptyState, Skeleton, Modal, useToast } from '@ody/shared'
-import { colors, spacing, typography, radius } from '@ody/shared'
+import { Card, StatusBadge, Button, Chip, EmptyState, Skeleton, Modal, useToast } from '@ody/shared'
+import { colors, spacing, typography } from '@ody/shared'
 import { useOrders, useOrderDetail, type OrderStatus } from '../../hooks/useOrders'
 import { NewOrderModal } from '../../components/NewOrderModal'
 import type { PostApiOrdersIdStatusBodyStatus } from '@ody/api-client'
@@ -51,13 +51,7 @@ export default function OrdersScreen() {
       {/* Filtres par statut */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow} contentContainerStyle={styles.filterContent}>
         {STATUS_FILTERS.map((f) => (
-          <TouchableOpacity
-            key={f.value}
-            style={[styles.filterChip, filter === f.value && styles.filterChipActive]}
-            onPress={() => setFilter(f.value)}
-          >
-            <Text style={[styles.filterLabel, filter === f.value && styles.filterLabelActive]}>{f.label}</Text>
-          </TouchableOpacity>
+          <Chip key={f.value} label={f.label} active={filter === f.value} onPress={() => setFilter(f.value)} />
         ))}
       </ScrollView>
 
@@ -157,10 +151,6 @@ const styles = StyleSheet.create({
   title: { fontSize: typography['2xl'], fontWeight: typography.bold, color: colors.textPrimary },
   filterRow: { maxHeight: 48 },
   filterContent: { paddingHorizontal: spacing.lg, gap: spacing.sm, alignItems: 'center' },
-  filterChip: { paddingHorizontal: spacing.md, paddingVertical: spacing.xs, borderRadius: radius.full, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-  filterChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  filterLabel: { fontSize: typography.sm, color: colors.textSecondary, fontWeight: typography.medium },
-  filterLabelActive: { color: colors.textInverse },
   list: { padding: spacing.lg, gap: spacing.md },
   orderCard: { gap: spacing.md },
   orderTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { useForm, Controller } from 'react-hook-form'
 import axios from 'axios'
-import { Card, Button, Badge, Modal, Input, Select, EmptyState, Skeleton, useToast } from '@ody/shared'
-import { colors, spacing, typography, radius } from '@ody/shared'
+import { Card, Button, Badge, Chip, Modal, Input, Select, EmptyState, Skeleton, useToast } from '@ody/shared'
+import { colors, spacing, typography } from '@ody/shared'
 import { useMenu } from '../../hooks/useMenu'
 import type { GetApiMenuItems200Item } from '@ody/api-client'
 
@@ -98,20 +98,9 @@ export default function MenuScreen() {
 
       {/* Filtres par catégorie */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow} contentContainerStyle={styles.filterContent}>
-        <TouchableOpacity
-          style={[styles.filterChip, selectedCategory === undefined && styles.filterChipActive]}
-          onPress={() => setSelectedCategory(undefined)}
-        >
-          <Text style={[styles.filterLabel, selectedCategory === undefined && styles.filterLabelActive]}>All</Text>
-        </TouchableOpacity>
+        <Chip label="All" active={selectedCategory === undefined} onPress={() => setSelectedCategory(undefined)} />
         {categories.map((cat) => (
-          <TouchableOpacity
-            key={cat.id}
-            style={[styles.filterChip, selectedCategory === cat.id && styles.filterChipActive]}
-            onPress={() => setSelectedCategory(cat.id)}
-          >
-            <Text style={[styles.filterLabel, selectedCategory === cat.id && styles.filterLabelActive]}>{cat.name}</Text>
-          </TouchableOpacity>
+          <Chip key={cat.id} label={cat.name} active={selectedCategory === cat.id} onPress={() => setSelectedCategory(cat.id)} />
         ))}
       </ScrollView>
 
@@ -189,10 +178,6 @@ const styles = StyleSheet.create({
   title: { fontSize: typography['2xl'], fontWeight: typography.bold, color: colors.textPrimary },
   filterRow: { maxHeight: 48 },
   filterContent: { paddingHorizontal: spacing.lg, gap: spacing.sm, alignItems: 'center' },
-  filterChip: { paddingHorizontal: spacing.md, paddingVertical: spacing.xs, borderRadius: radius.full, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-  filterChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  filterLabel: { fontSize: typography.sm, color: colors.textSecondary, fontWeight: typography.medium },
-  filterLabelActive: { color: colors.textInverse },
   list: { flex: 1 },
   listContent: { padding: spacing.lg, gap: spacing.md },
   itemCard: { padding: spacing.md },
