@@ -138,7 +138,7 @@ Le design system vit dans le package partagé `@ody/shared`. Des tokens centrali
 typographie, les espacements, les arrondis, les ombres et les règles de layout/grille.
 Les primitives réutilisables sont dans
 [packages/shared/src/components](packages/shared/src/components) : Button, Input, Select,
-Chip, Badge/StatusBadge, Card, Modal, Skeleton, EmptyState, et un système de toasts
+Chip, Badge/StatusBadge, Card, Table, Modal, Skeleton, EmptyState, et un système de toasts
 (`ToastProvider` + `useToast`) — avec leurs états hover / focus / pressed / disabled.
 
 Il y a aussi une route **Design System** dédiée

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ScrollView, View, Text, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
-import { Button, Badge, StatusBadge, Card, Chip, Input, Select, Skeleton, Modal, EmptyState, useToast } from '@ody/shared'
+import { Button, Badge, StatusBadge, Card, Chip, Input, Select, Skeleton, Table, type TableColumn, Modal, EmptyState, useToast } from '@ody/shared'
 import { colors, spacing, radius, typography, shadows, layout } from '@ody/shared'
 
 export default function UiLibraryScreen() {
@@ -161,6 +161,25 @@ export default function UiLibraryScreen() {
             { label: 'Delivery', value: 'delivery' },
           ]}
         />
+      </Section>
+
+      {/* TABLE / LISTS */}
+      <Section title="Table / data list">
+        <View style={{ height: 160 }}>
+          <Table
+            columns={[
+              { key: 'name', header: 'Item', flex: 2 },
+              { key: 'qty', header: 'Qty', flex: 1, align: 'right' },
+              { key: 'price', header: 'Price', flex: 1, align: 'right', render: (r: { price: string }) => <Text style={{ color: colors.primary, fontWeight: typography.semibold }}>€{r.price}</Text> },
+            ] satisfies TableColumn<{ id: string; name: string; qty: number; price: string }>[]}
+            data={[
+              { id: '1', name: 'Bruschetta', qty: 2, price: '8.50' },
+              { id: '2', name: 'Grilled Salmon', qty: 1, price: '24.00' },
+              { id: '3', name: 'Lemonade', qty: 3, price: '4.50' },
+            ]}
+            keyExtractor={(r) => r.id}
+          />
+        </View>
       </Section>
 
       {/* FEEDBACK STATES */}

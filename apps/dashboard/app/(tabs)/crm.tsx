@@ -1,8 +1,11 @@
 import { useState } from 'react'
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native'
-import { Card, Modal, EmptyState, Skeleton, StatusBadge } from '@ody/shared'
+import { View, Text, StyleSheet } from 'react-native'
+import { Modal, EmptyState, Skeleton, StatusBadge, Table, type TableColumn } from '@ody/shared'
 import { colors, spacing, typography } from '@ody/shared'
-import { useGetApiCustomers, useGetApiCustomersId } from '@ody/api-client'
+import { useGetApiCustomers, useGetApiCustomersId, type GetApiCustomers200Item } from '@ody/api-client'
+
+const formatDate = (iso: string | null) =>
+  iso ? new Date(iso).toLocaleDateString() : '—'
 
 export default function CrmScreen() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -10,6 +13,24 @@ export default function CrmScreen() {
   const { data: detail, isLoading: detailLoading } = useGetApiCustomersId(selectedId ?? '', {
     query: { enabled: !!selectedId },
   })
+
+  // Colonnes du tableau CRM (primitive Table réutilisable).
+  const columns: TableColumn<GetApiCustomers200Item>[] = [
+    {
+      key: 'name',
+      header: 'Customer',
+      flex: 2.2,
+      render: (c) => (
+        <View>
+          <Text style={styles.name}>{c.name}</Text>
+          <Text style={styles.email}>{c.email}</Text>
+        </View>
+      ),
+    },
+    { key: 'orderCount', header: 'Orders', flex: 1, align: 'right', render: (c) => <Text style={styles.cell}>{c.orderCount}</Text> },
+    { key: 'totalSpend', header: 'Spend', flex: 1, align: 'right', render: (c) => <Text style={styles.spend}>€{c.totalSpend}</Text> },
+    { key: 'lastOrderAt', header: 'Last order', flex: 1.4, align: 'right', render: (c) => <Text style={styles.cellMuted}>{formatDate(c.lastOrderAt)}</Text> },
+  ]
 
   return (
     <View style={styles.container}>
@@ -20,37 +41,21 @@ export default function CrmScreen() {
 
       {isLoading ? (
         <View style={styles.list}>
-          {[1, 2, 3].map((i) => <Skeleton key={i} height={80} style={{ marginBottom: spacing.md }} />)}
+          {[1, 2, 3].map((i) => <Skeleton key={i} height={56} style={{ marginBottom: spacing.sm }} />)}
         </View>
       ) : isError ? (
         <EmptyState icon="⚠️" title="Couldn't load customers" description="Check that the backend is running" />
       ) : !customers || customers.length === 0 ? (
         <EmptyState icon="👥" title="No customers yet" description="Customers appear here once orders are placed" />
       ) : (
-        <FlatList
-          data={customers}
-          keyExtractor={(c) => c.id}
-          contentContainerStyle={styles.list}
-          renderItem={({ item: customer }) => (
-            <TouchableOpacity onPress={() => setSelectedId(customer.id)} activeOpacity={0.7}>
-              <Card style={styles.customerCard}>
-                <View style={styles.customerRow}>
-                  <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>{customer.name.charAt(0)}</Text>
-                  </View>
-                  <View style={styles.customerInfo}>
-                    <Text style={styles.name}>{customer.name}</Text>
-                    <Text style={styles.email}>{customer.email}</Text>
-                  </View>
-                  <View style={styles.stats}>
-                    <Text style={styles.spend}>€{customer.totalSpend}</Text>
-                    <Text style={styles.orderCount}>{customer.orderCount} orders</Text>
-                  </View>
-                </View>
-              </Card>
-            </TouchableOpacity>
-          )}
-        />
+        <View style={styles.tableWrap}>
+          <Table
+            columns={columns}
+            data={customers}
+            keyExtractor={(c) => c.id}
+            onRowPress={(c) => setSelectedId(c.id)}
+          />
+        </View>
       )}
 
       <Modal visible={!!selectedId} onClose={() => setSelectedId(null)} title={detail?.name ?? 'Customer'}>
@@ -90,16 +95,12 @@ const styles = StyleSheet.create({
   title: { fontSize: typography['2xl'], fontWeight: typography.bold, color: colors.textPrimary },
   subtitle: { fontSize: typography.base, color: colors.textSecondary },
   list: { padding: spacing.lg, gap: spacing.md },
-  customerCard: { padding: spacing.md },
-  customerRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '20', justifyContent: 'center', alignItems: 'center' },
-  avatarText: { fontSize: typography.lg, fontWeight: typography.bold, color: colors.primary },
-  customerInfo: { flex: 1 },
+  tableWrap: { flex: 1, paddingHorizontal: spacing.lg, paddingBottom: spacing.lg },
   name: { fontSize: typography.base, fontWeight: typography.semibold, color: colors.textPrimary },
   email: { fontSize: typography.sm, color: colors.textSecondary },
-  stats: { alignItems: 'flex-end' },
+  cell: { fontSize: typography.base, color: colors.textPrimary },
+  cellMuted: { fontSize: typography.sm, color: colors.textSecondary },
   spend: { fontSize: typography.base, fontWeight: typography.bold, color: colors.primary },
-  orderCount: { fontSize: typography.xs, color: colors.textTertiary },
   detail: { gap: spacing.lg },
   detailRow: { flexDirection: 'row', justifyContent: 'space-between' },
   label: { fontSize: typography.sm, color: colors.textSecondary },
