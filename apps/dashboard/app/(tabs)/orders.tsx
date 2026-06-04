@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native'
-import { Card, StatusBadge, Button, EmptyState, Skeleton, Modal } from '@ody/shared'
+import axios from 'axios'
+import { Card, StatusBadge, Button, EmptyState, Skeleton, Modal, useToast } from '@ody/shared'
 import { colors, spacing, typography, radius } from '@ody/shared'
 import { useOrders, useOrderDetail, type OrderStatus } from '../../hooks/useOrders'
+import type { PostApiOrdersIdStatusBodyStatus } from '@ody/api-client'
 
 const STATUS_FILTERS: { label: string; value: OrderStatus | 'all' }[] = [
   { label: 'All', value: 'all' },
@@ -18,10 +20,24 @@ export default function OrdersScreen() {
   const [filter, setFilter] = useState<OrderStatus | 'all'>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
+  const toast = useToast()
   const { orders, isLoading, isError, getNextAction, updateStatus, isUpdating } = useOrders(
     filter === 'all' ? undefined : filter
   )
   const { data: detail, isLoading: detailLoading } = useOrderDetail(selectedId)
+
+  // Applique une transition de statut et affiche un toast (succès ou erreur backend).
+  const changeStatus = async (id: string, status: PostApiOrdersIdStatusBodyStatus) => {
+    try {
+      await updateStatus(id, status)
+      toast.success(`Order marked as ${status}`)
+    } catch (err) {
+      const message = axios.isAxiosError(err)
+        ? (err.response?.data as { error?: string } | undefined)?.error ?? 'Could not update the order.'
+        : 'Could not update the order.'
+      toast.error(message)
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -77,12 +93,12 @@ export default function OrdersScreen() {
                           label={nextAction.label}
                           size="sm"
                           loading={isUpdating}
-                          onPress={() => updateStatus(order.id, nextAction.status)}
+                          onPress={() => changeStatus(order.id, nextAction.status)}
                         />
                       )}
                       {order.status === 'pending' && (
                         <Button label="Cancel" size="sm" variant="danger"
-                          onPress={() => updateStatus(order.id, 'cancelled')}
+                          onPress={() => changeStatus(order.id, 'cancelled')}
                         />
                       )}
                     </View>

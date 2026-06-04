@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { ScrollView, View, Text, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
-import { Button, Badge, StatusBadge, Card, Input, Select, Skeleton, Modal, EmptyState } from '@ody/shared'
+import { Button, Badge, StatusBadge, Card, Input, Select, Skeleton, Modal, EmptyState, useToast } from '@ody/shared'
 import { colors, spacing, radius, typography, shadows } from '@ody/shared'
 
 export default function UiLibraryScreen() {
   const router = useRouter()
+  const toast = useToast()
   const [modalOpen, setModalOpen] = useState(false)
   const [selectValue, setSelectValue] = useState<string>()
 
@@ -132,10 +133,17 @@ export default function UiLibraryScreen() {
       </Section>
 
       {/* FEEDBACK STATES */}
-      <Section title="Feedback — loading / empty">
+      <Section title="Feedback — loading / empty / toast">
         <Text style={styles.groupLabel}>Skeleton</Text>
         <Skeleton height={20} style={{ marginBottom: spacing.sm }} />
         <Skeleton height={20} width="60%" />
+        <Text style={styles.groupLabel}>Toasts</Text>
+        <View style={styles.componentRow}>
+          <Button label="Success" size="sm" onPress={() => toast.success('Saved successfully')} />
+          <Button label="Error" size="sm" variant="danger" onPress={() => toast.error('Something went wrong')} />
+          <Button label="Warning" size="sm" variant="secondary" onPress={() => toast.warning('Heads up')} />
+          <Button label="Info" size="sm" variant="ghost" onPress={() => toast.info('For your information')} />
+        </View>
         <Text style={styles.groupLabel}>Empty state</Text>
         <Card>
           <EmptyState icon="📭" title="Nothing here" description="An empty state example" />

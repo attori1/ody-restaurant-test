@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { ScrollView, View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native'
+import { ScrollView, View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { useForm, Controller } from 'react-hook-form'
 import axios from 'axios'
-import { Card, Button, Badge, Modal, Input, Select, EmptyState, Skeleton } from '@ody/shared'
+import { Card, Button, Badge, Modal, Input, Select, EmptyState, Skeleton, useToast } from '@ody/shared'
 import { colors, spacing, typography, radius } from '@ody/shared'
 import { useMenu } from '../../hooks/useMenu'
 import type { GetApiMenuItems200Item } from '@ody/api-client'
@@ -18,6 +18,8 @@ export default function MenuScreen() {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined)
   const [showModal, setShowModal] = useState(false)
   const [editItem, setEditItem] = useState<GetApiMenuItems200Item | null>(null)
+
+  const toast = useToast()
 
   // Toute la logique de données vient du hook métier — la page reste présentationnelle.
   const { items, categories, isLoading, isError, createItem, updateItem, deleteItem, isSaving } =
@@ -57,29 +59,33 @@ export default function MenuScreen() {
     try {
       if (editItem) {
         await updateItem(editItem.id, payload)
+        toast.success(`"${payload.name}" updated`)
       } else {
         await createItem(payload)
+        toast.success(`"${payload.name}" added to the menu`)
       }
       setShowModal(false)
     } catch (err) {
-      Alert.alert('Error', errorMessage(err, 'Could not save the item.'))
+      toast.error(errorMessage(err, 'Could not save the item.'))
     }
   }
 
   const toggleAvailability = async (item: GetApiMenuItems200Item) => {
     try {
       await updateItem(item.id, { available: !item.available })
+      toast.info(`"${item.name}" is now ${item.available ? 'unavailable' : 'available'}`)
     } catch (err) {
-      Alert.alert('Error', errorMessage(err, 'Could not update availability.'))
+      toast.error(errorMessage(err, 'Could not update availability.'))
     }
   }
 
   const handleDelete = async (item: GetApiMenuItems200Item) => {
     try {
       await deleteItem(item.id)
+      toast.success(`"${item.name}" deleted`)
     } catch (err) {
       // Affiche le 409 "plat utilisé dans des commandes" renvoyé par le backend.
-      Alert.alert('Cannot delete', errorMessage(err, 'Could not delete the item.'))
+      toast.error(errorMessage(err, 'Could not delete the item.'))
     }
   }
 
