@@ -53,8 +53,10 @@ des URLs cassées. Sans cette chaîne, je ne l'aurais découvert qu'au runtime.
 ## Structure du dépôt
 
 ```
-apps/dashboard         App Expo (web) — pages, design system, hooks métier
+apps/dashboard         App Expo (web) — pages et hooks métier
 services/backend       API Hono sur Workers — schéma Drizzle, routes, logique commandes
+packages/shared        Design system : tokens + composants UI réutilisables (@ody/shared)
+packages/types         Types et logique de domaine partagés (@ody/types)
 packages/api-client    Config Orval + hooks/types générés (la surface de contrat)
 ```
 
@@ -131,10 +133,12 @@ Trois règles que je tenais à appliquer côté serveur :
 
 ## Le design system
 
-Des tokens centralisés ([apps/dashboard/tokens](apps/dashboard/tokens)) pour les
-couleurs, la typographie, les espacements, les arrondis et les ombres. Les primitives
-réutilisables sont dans [apps/dashboard/components/ui](apps/dashboard/components/ui) :
-Button, Input, Badge/StatusBadge, Card, Modal, Skeleton, EmptyState.
+Le design system vit dans le package partagé `@ody/shared`. Des tokens centralisés
+([packages/shared/src/tokens](packages/shared/src/tokens)) pour les couleurs, la
+typographie, les espacements, les arrondis et les ombres. Les primitives réutilisables
+sont dans [packages/shared/src/components](packages/shared/src/components) : Button, Input,
+Badge/StatusBadge, Card, Modal, Skeleton, EmptyState — avec leurs états hover / focus /
+pressed / disabled.
 
 Il y a aussi une route **Design System** dédiée
 ([/ui-library](apps/dashboard/app/ui-library.tsx), accessible depuis l'en-tête de
@@ -146,7 +150,8 @@ l'accueil) qui présente tous les tokens, les surfaces et les états des composa
 
 - **Backend** (Vitest) : transitions de la machine à états + calcul/validation des prix
   côté serveur — 11 tests sur la logique métier pure.
-- **Frontend** (Jest) : logique d'affichage pure (action suivante / annulable) — 3 tests.
+- **`@ody/types`** (Vitest) : logique de flux des commandes — 3 tests.
+- **Dashboard** (Jest) : flux des commandes tel que consommé par la page Orders — 2 tests.
 
 ```bash
 pnpm test
@@ -161,8 +166,11 @@ pnpm test
   la spec OpenAPI du backend ; l'app ne déclare jamais ses propres DTO.
 - **La logique métier hors des composants.** Les pages ne font que de l'affichage. Les
   données et les mutations vivent dans des hooks métier (`hooks/useMenu.ts`,
-  `hooks/useOrders.ts`, `hooks/useSettings.ts`), et les règles pures dans des modules
-  dédiés (`lib/order-ui.ts`, et côté backend `lib/orders-logic.ts`).
+  `hooks/useOrders.ts`, `hooks/useSettings.ts`), et les règles pures dans des packages
+  dédiés (`@ody/types` côté front, `lib/orders-logic.ts` côté backend).
+- **Packages partagés.** Le design system (tokens + composants) vit dans `@ody/shared`,
+  les types/logique de domaine dans `@ody/types`, et le client d'API généré dans
+  `@ody/api-client`. Le dashboard ne fait que les consommer.
 - **Invalidation du cache React Query.** Les mutations invalident les bonnes clés de
   requête, donc l'UI se resynchronise depuis le serveur (la source de vérité) au lieu de
   bricoler un état local.
@@ -179,23 +187,14 @@ Orders** (les parties les plus valorisées dans l'énoncé), et j'ai assumé que
 
 - **Web uniquement.** Le natif est un bonus dans l'énoncé, donc l'app vise le web. Les
   primitives RN sont compatibles natif, mais je ne les ai pas testées sur device.
-- **`packages/shared` et `packages/types` non séparés.** Les tokens et les composants UI
-  vivent dans `apps/dashboard`. Avec plus de temps, je les aurais extraits dans des
-  packages partagés comme le suggère la structure de l'énoncé. `packages/api-client`
-  (le package partagé le plus important) est bien en place, lui.
 - **La création de commande depuis le dashboard** est gérée côté backend (validée,
   chiffrée, testée), mais l'UI se concentre sur le flux opérationnel (liste / filtres /
   détail / statut). Un écran de création de commande serait la prochaine étape.
 - **Les tests de rendu des composants frontend** ont été mis de côté au profit de tests
   de logique pure : faire tourner le rendu React Native sous `jest-expo` dans un monorepo
   pnpm demande une grosse config de transformation pour peu de valeur. J'ai préféré
-  couvrir la logique backend, là où sont les vraies règles.
+  couvrir la logique métier (backend + flux des commandes), là où sont les vraies règles.
+- **Validation du client sur une commande.** À la création d'une commande, les plats sont
+  validés (existence, disponibilité) mais un `customerId` inexistant remonterait encore une
+  erreur de clé étrangère ; le valider explicitement serait le prochain petit durcissement.
 - **Auth et multi-restaurant** sont volontairement hors périmètre.
-
----
-
-> Note : quelques limites connues que je n'ai pas eu le temps de durcir — la suppression
-> d'un plat déjà présent dans une commande remonte une erreur FK brute (un soft-delete
-> via le champ `available` serait plus propre), et le script de seed n'est pas idempotent
-> (le relancer deux fois échoue sur l'email unique). Rien de bloquant pour la revue, mais
-> autant être transparent.
