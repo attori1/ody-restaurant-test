@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native'
 import { useForm, Controller } from 'react-hook-form'
 import axios from 'axios'
-import { Card, Button, Badge, Modal, Input, EmptyState, Skeleton } from '@ody/shared'
+import { Card, Button, Badge, Modal, Input, Select, EmptyState, Skeleton } from '@ody/shared'
 import { colors, spacing, typography, radius } from '@ody/shared'
 import { useMenu } from '../../hooks/useMenu'
 import type { GetApiMenuItems200Item } from '@ody/api-client'
@@ -154,20 +154,14 @@ export default function MenuScreen() {
           />
           <Controller control={control} name="categoryId" rules={{ required: 'Category is required' }}
             render={({ field }) => (
-              <View style={styles.catSelect}>
-                <Text style={styles.catLabel}>Category</Text>
-                <View style={styles.catChips}>
-                  {categories.map((cat) => (
-                    <TouchableOpacity
-                      key={cat.id}
-                      style={[styles.filterChip, field.value === cat.id && styles.filterChipActive]}
-                      onPress={() => field.onChange(cat.id)}
-                    >
-                      <Text style={[styles.filterLabel, field.value === cat.id && styles.filterLabelActive]}>{cat.name}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
+              <Select
+                label="Category"
+                value={field.value}
+                onChange={field.onChange}
+                placeholder="Choose a category"
+                options={categories.map((cat) => ({ label: cat.name, value: cat.id }))}
+                error={errors.categoryId?.message}
+              />
             )}
           />
           <Controller control={control} name="description"
@@ -206,7 +200,4 @@ const styles = StyleSheet.create({
   itemActions: { flexDirection: 'row', gap: spacing.xs },
   form: { gap: spacing.lg },
   formActions: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.md },
-  catSelect: { gap: spacing.xs },
-  catLabel: { fontSize: typography.sm, fontWeight: typography.medium, color: colors.textPrimary },
-  catChips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
 })

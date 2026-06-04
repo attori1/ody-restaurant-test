@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { ScrollView, View, Text, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
-import { Button, Badge, StatusBadge, Card, Input, Skeleton, Modal, EmptyState } from '@ody/shared'
+import { Button, Badge, StatusBadge, Card, Input, Select, Skeleton, Modal, EmptyState } from '@ody/shared'
 import { colors, spacing, radius, typography, shadows } from '@ody/shared'
 
 export default function UiLibraryScreen() {
   const router = useRouter()
   const [modalOpen, setModalOpen] = useState(false)
+  const [selectValue, setSelectValue] = useState<string>()
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -117,6 +118,17 @@ export default function UiLibraryScreen() {
         <Input label="Default input" placeholder="Type here..." />
         <Input label="With hint" placeholder="email@example.com" hint="We'll never share it" />
         <Input label="With error" placeholder="Invalid" error="This field is required" />
+        <Select
+          label="Select / dropdown"
+          value={selectValue}
+          onChange={setSelectValue}
+          placeholder="Pick an option"
+          options={[
+            { label: 'Dine in', value: 'dine_in' },
+            { label: 'Takeaway', value: 'takeaway' },
+            { label: 'Delivery', value: 'delivery' },
+          ]}
+        />
       </Section>
 
       {/* FEEDBACK STATES */}
