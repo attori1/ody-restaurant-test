@@ -125,13 +125,27 @@ menuRouter.openapi(
     responses: {
       204: { description: 'Deleted' },
       404: { description: 'Not found' },
+      409: { description: 'Item is referenced by existing orders' },
     },
   }),
   async (c) => {
     const db = createDb(c.env.DATABASE_URL)
     const { id } = c.req.valid('param')
-    const [item] = await db.delete(menuItems).where(eq(menuItems.id, id)).returning()
-    if (!item) return c.json({ error: 'Item not found' }, 404)
-    return c.body(null, 204)
+    try {
+      const [item] = await db.delete(menuItems).where(eq(menuItems.id, id)).returning()
+      if (!item) return c.json({ error: 'Item not found' }, 404)
+      return c.body(null, 204)
+    } catch (err: unknown) {
+      // Un plat présent dans une commande ne peut pas être supprimé (clé étrangère).
+      // On renvoie un 409 explicite plutôt qu'un 500 — l'UI peut alors suggérer
+      // de le rendre indisponible (toggle) au lieu de le supprimer.
+      if (err instanceof Error && /foreign key|violates/i.test(err.message)) {
+        return c.json(
+          { error: 'This item is used in existing orders. Set it as unavailable instead of deleting it.' },
+          409
+        )
+      }
+      throw err
+    }
   }
 )

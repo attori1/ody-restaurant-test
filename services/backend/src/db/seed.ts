@@ -11,6 +11,16 @@ const db = drizzle(sql, { schema })
 async function seed() {
   console.log('🌱 Seeding database...')
 
+  // On vide d'abord les tables pour que le seed soit idempotent (relançable sans erreur).
+  // L'ordre respecte les clés étrangères : les enfants avant les parents.
+  console.log('🧹 Clearing existing data...')
+  await db.delete(schema.orderItems)
+  await db.delete(schema.orders)
+  await db.delete(schema.menuItems)
+  await db.delete(schema.menuCategories)
+  await db.delete(schema.customers)
+  await db.delete(schema.restaurantSettings)
+
   // Categories
   const [starters, mains, desserts, drinks] = await db
     .insert(schema.menuCategories)

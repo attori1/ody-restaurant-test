@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { ScrollView, View, Text, StyleSheet, TouchableOpacity } from 'react-native'
+import { ScrollView, View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native'
 import { useForm, Controller } from 'react-hook-form'
+import axios from 'axios'
 import { Card, Button, Badge, Modal, Input, EmptyState, Skeleton } from '@ody/shared'
 import { colors, spacing, typography, radius } from '@ody/shared'
 import { useMenu } from '../../hooks/useMenu'
@@ -38,6 +39,14 @@ export default function MenuScreen() {
     setShowModal(true)
   }
 
+  // Extrait un message d'erreur lisible d'une réponse backend (ex: le 409 de suppression).
+  const errorMessage = (err: unknown, fallback: string) => {
+    if (axios.isAxiosError(err)) {
+      return (err.response?.data as { error?: string } | undefined)?.error ?? fallback
+    }
+    return fallback
+  }
+
   const onSubmit = async (data: FormValues) => {
     const payload = {
       name: data.name,
@@ -45,16 +54,33 @@ export default function MenuScreen() {
       categoryId: data.categoryId,
       description: data.description || null,
     }
-    if (editItem) {
-      await updateItem(editItem.id, payload)
-    } else {
-      await createItem(payload)
+    try {
+      if (editItem) {
+        await updateItem(editItem.id, payload)
+      } else {
+        await createItem(payload)
+      }
+      setShowModal(false)
+    } catch (err) {
+      Alert.alert('Error', errorMessage(err, 'Could not save the item.'))
     }
-    setShowModal(false)
   }
 
   const toggleAvailability = async (item: GetApiMenuItems200Item) => {
-    await updateItem(item.id, { available: !item.available })
+    try {
+      await updateItem(item.id, { available: !item.available })
+    } catch (err) {
+      Alert.alert('Error', errorMessage(err, 'Could not update availability.'))
+    }
+  }
+
+  const handleDelete = async (item: GetApiMenuItems200Item) => {
+    try {
+      await deleteItem(item.id)
+    } catch (err) {
+      // Affiche le 409 "plat utilisé dans des commandes" renvoyé par le backend.
+      Alert.alert('Cannot delete', errorMessage(err, 'Could not delete the item.'))
+    }
   }
 
   return (
@@ -108,7 +134,7 @@ export default function MenuScreen() {
                   <Text style={styles.price}>€{item.price}</Text>
                   <View style={styles.itemActions}>
                     <Button label="Edit" variant="secondary" size="sm" onPress={() => openEdit(item)} />
-                    <Button label="Delete" variant="danger" size="sm" onPress={() => deleteItem(item.id)} />
+                    <Button label="Delete" variant="danger" size="sm" onPress={() => handleDelete(item)} />
                   </View>
                 </View>
               </View>

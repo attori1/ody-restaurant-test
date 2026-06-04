@@ -1,4 +1,5 @@
-import { TouchableOpacity, Text, ActivityIndicator, StyleSheet, type ViewStyle } from 'react-native'
+import { useState } from 'react'
+import { Pressable, Text, ActivityIndicator, StyleSheet, type ViewStyle } from 'react-native'
 import { colors, spacing, radius, typography } from '../tokens'
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'
@@ -16,17 +17,34 @@ interface ButtonProps {
 
 export function Button({ onPress, label, variant = 'primary', size = 'md', loading, disabled, style }: ButtonProps) {
   const isDisabled = disabled || loading
+  // États interactifs gérés explicitement pour couvrir web (hover/focus) et tactile (pressed).
+  const [hovered, setHovered] = useState(false)
+  const [focused, setFocused] = useState(false)
 
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={onPress}
       disabled={isDisabled}
-      style={[styles.base, styles[variant], styles[`size_${size}`], isDisabled && styles.disabled, style]}
-      activeOpacity={0.75}
+      onHoverIn={() => setHovered(true)}
+      onHoverOut={() => setHovered(false)}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      style={({ pressed }) => [
+        styles.base,
+        styles[variant],
+        styles[`size_${size}`],
+        // hover : léger assombrissement ; pressed : un peu plus marqué
+        !isDisabled && hovered && hoverStyles[variant],
+        !isDisabled && pressed && styles.pressed,
+        // focus : anneau visible (accessibilité clavier)
+        focused && styles.focused,
+        isDisabled && styles.disabled,
+        style,
+      ]}
     >
-      {loading && <ActivityIndicator size="small" color={variant === 'primary' ? colors.textInverse : colors.primary} style={styles.spinner} />}
+      {loading && <ActivityIndicator size="small" color={variant === 'primary' || variant === 'danger' ? colors.textInverse : colors.primary} style={styles.spinner} />}
       <Text style={[labelStyles[variant], labelSizeStyles[size]]}>{label}</Text>
-    </TouchableOpacity>
+    </Pressable>
   )
 }
 
@@ -44,8 +62,18 @@ const styles = StyleSheet.create({
   size_sm: { paddingHorizontal: spacing.md, paddingVertical: spacing.xs, minHeight: 32 },
   size_md: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm + 2, minHeight: 40 },
   size_lg: { paddingHorizontal: spacing.xl, paddingVertical: spacing.md, minHeight: 48 },
+  pressed: { opacity: 0.7 },
+  focused: { borderWidth: 2, borderColor: colors.primaryDark },
   disabled: { opacity: 0.45 },
   spinner: { marginRight: spacing.xs },
+})
+
+// Couleurs au survol : une teinte plus soutenue par variante.
+const hoverStyles = StyleSheet.create({
+  primary: { backgroundColor: colors.primaryDark },
+  secondary: { backgroundColor: colors.border },
+  ghost: { backgroundColor: colors.surfaceElevated },
+  danger: { backgroundColor: '#DC2626' },
 })
 
 const labelStyles = StyleSheet.create({

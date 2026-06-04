@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { View, TextInput, Text, StyleSheet, type TextInputProps } from 'react-native'
 import { colors, spacing, radius, typography } from '../tokens'
 
@@ -7,13 +8,16 @@ interface InputProps extends TextInputProps {
   hint?: string
 }
 
-export function Input({ label, error, hint, style, ...props }: InputProps) {
+export function Input({ label, error, hint, style, onFocus, onBlur, ...props }: InputProps) {
+  const [focused, setFocused] = useState(false)
   return (
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
       <TextInput
-        style={[styles.input, error && styles.inputError, style]}
+        style={[styles.input, focused && styles.inputFocused, error && styles.inputError, style]}
         placeholderTextColor={colors.textTertiary}
+        onFocus={(e) => { setFocused(true); onFocus?.(e) }}
+        onBlur={(e) => { setFocused(false); onBlur?.(e) }}
         {...props}
       />
       {error && <Text style={styles.error}>{error}</Text>}
@@ -39,6 +43,7 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     backgroundColor: colors.surface,
   },
+  inputFocused: { borderColor: colors.primary, borderWidth: 2 },
   inputError: { borderColor: colors.error },
   error: { fontSize: typography.xs, color: colors.error },
   hint: { fontSize: typography.xs, color: colors.textTertiary },
