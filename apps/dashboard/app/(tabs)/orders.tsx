@@ -4,6 +4,7 @@ import axios from 'axios'
 import { Card, StatusBadge, Button, EmptyState, Skeleton, Modal, useToast } from '@ody/shared'
 import { colors, spacing, typography, radius } from '@ody/shared'
 import { useOrders, useOrderDetail, type OrderStatus } from '../../hooks/useOrders'
+import { NewOrderModal } from '../../components/NewOrderModal'
 import type { PostApiOrdersIdStatusBodyStatus } from '@ody/api-client'
 
 const STATUS_FILTERS: { label: string; value: OrderStatus | 'all' }[] = [
@@ -19,6 +20,7 @@ const STATUS_FILTERS: { label: string; value: OrderStatus | 'all' }[] = [
 export default function OrdersScreen() {
   const [filter, setFilter] = useState<OrderStatus | 'all'>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [showNewOrder, setShowNewOrder] = useState(false)
 
   const toast = useToast()
   const { orders, isLoading, isError, getNextAction, updateStatus, isUpdating } = useOrders(
@@ -43,6 +45,7 @@ export default function OrdersScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Orders</Text>
+        <Button label="+ New Order" size="sm" onPress={() => setShowNewOrder(true)} />
       </View>
 
       {/* Filtres par statut */}
@@ -141,13 +144,16 @@ export default function OrdersScreen() {
           </View>
         )}
       </Modal>
+
+      {/* Création de commande */}
+      <NewOrderModal visible={showNewOrder} onClose={() => setShowNewOrder(false)} />
     </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { padding: spacing.lg, paddingBottom: spacing.md },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: spacing.lg, paddingBottom: spacing.md },
   title: { fontSize: typography['2xl'], fontWeight: typography.bold, color: colors.textPrimary },
   filterRow: { maxHeight: 48 },
   filterContent: { paddingHorizontal: spacing.lg, gap: spacing.sm, alignItems: 'center' },
