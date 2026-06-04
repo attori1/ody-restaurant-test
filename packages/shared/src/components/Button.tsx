@@ -73,7 +73,7 @@ const hoverStyles = StyleSheet.create({
   primary: { backgroundColor: colors.primaryDark },
   secondary: { backgroundColor: colors.border },
   ghost: { backgroundColor: colors.surfaceElevated },
-  danger: { backgroundColor: '#DC2626' },
+  danger: { backgroundColor: colors.errorDark },
 })
 
 const labelStyles = StyleSheet.create({
