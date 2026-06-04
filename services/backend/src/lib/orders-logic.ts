@@ -1,9 +1,11 @@
 /**
- * Logique métier pure des commandes — sans dépendance à la base de données.
- * Extraite ici pour être testable unitairement et réutilisable dans les routes.
+ * Logique métier pure des commandes — pas de connexion DB, juste des fonctions testables.
+ * On importe l'enum Drizzle uniquement pour *dériver* le type des statuts : la liste des
+ * statuts n'est définie qu'à un seul endroit (le schéma), jamais réécrite à la main.
  */
+import { orderStatusEnum } from '../db/schema'
 
-export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled'
+export type OrderStatus = (typeof orderStatusEnum.enumValues)[number]
 
 /** Machine à états : transitions autorisées depuis chaque statut. */
 export const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {

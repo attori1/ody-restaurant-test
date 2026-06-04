@@ -1,7 +1,7 @@
 import { ScrollView, View, Text, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Card, Skeleton, EmptyState, Button } from '@ody/shared'
-import { colors, spacing, typography } from '@ody/shared'
+import { colors, spacing, typography, layout } from '@ody/shared'
 import { useGetApiAnalyticsKpis } from '@ody/api-client'
 
 export default function HomeScreen() {
@@ -86,7 +86,8 @@ function KpiCard({ label, value, icon, color, loading }: {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, gap: spacing.lg },
+  // Largeur max centrée (règle de layout du design system) pour rester lisible en grand écran.
+  content: { padding: spacing.lg, gap: spacing.lg, width: '100%', maxWidth: layout.maxContentWidth, alignSelf: 'center' },
   header: { paddingVertical: spacing.md },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: spacing.md },
   headerText: { gap: spacing.xs, flex: 1 },

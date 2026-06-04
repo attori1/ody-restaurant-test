@@ -98,3 +98,28 @@ export const shadows = {
     elevation: 6,
   },
 } as const
+
+// Règles de layout / grille du design system.
+// - maxContentWidth : largeur max du contenu, centré sur grand écran (lecture confortable)
+// - gutter : espacement standard entre colonnes / cartes
+// - breakpoints : seuils responsives (pour adapter le nombre de colonnes)
+export const layout = {
+  maxContentWidth: 1120,
+  gutter: spacing.lg,
+  breakpoints: {
+    sm: 480,
+    md: 768,
+    lg: 1024,
+  },
+} as const
+
+/**
+ * Nombre de colonnes recommandé selon la largeur disponible (grille responsive).
+ * Sert aux grilles de cartes (KPIs, etc.) pour rester lisibles sur toutes tailles.
+ */
+export function gridColumns(width: number): number {
+  if (width >= layout.breakpoints.lg) return 4
+  if (width >= layout.breakpoints.md) return 3
+  if (width >= layout.breakpoints.sm) return 2
+  return 1
+}

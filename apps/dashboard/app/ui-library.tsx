@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ScrollView, View, Text, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Button, Badge, StatusBadge, Card, Input, Select, Skeleton, Modal, EmptyState, useToast } from '@ody/shared'
-import { colors, spacing, radius, typography, shadows } from '@ody/shared'
+import { colors, spacing, radius, typography, shadows, layout } from '@ody/shared'
 
 export default function UiLibraryScreen() {
   const router = useRouter()
@@ -74,6 +74,31 @@ export default function UiLibraryScreen() {
           <View style={[styles.elevSurface, shadows.md]}><Text style={styles.surfaceLabel}>shadow md</Text></View>
           <View style={[styles.elevSurface, shadows.lg]}><Text style={styles.surfaceLabel}>shadow lg</Text></View>
         </View>
+      </Section>
+
+      {/* LAYOUT & GRID */}
+      <Section title="Layout & grid rules">
+        <Text style={styles.bodyText}>
+          Le contenu est centré et plafonné à <Text style={styles.code}>{layout.maxContentWidth}px</Text> de large
+          (lisibilité sur grand écran), avec une gouttière de <Text style={styles.code}>{layout.gutter}px</Text> entre les éléments.
+        </Text>
+        <Text style={styles.groupLabel}>Colonnes responsives (gridColumns)</Text>
+        {([
+          ['Mobile (<480)', 1],
+          ['≥480', 2],
+          ['≥768', 3],
+          ['≥1024', 4],
+        ] as const).map(([range, cols]) => (
+          <View key={range} style={styles.gridRuleRow}>
+            <Text style={styles.gridRuleLabel}>{range}</Text>
+            <View style={styles.gridDemo}>
+              {Array.from({ length: cols }).map((_, i) => (
+                <View key={i} style={styles.gridCell} />
+              ))}
+            </View>
+            <Text style={styles.gridRuleCols}>{cols} col</Text>
+          </View>
+        ))}
       </Section>
 
       {/* BUTTONS */}
@@ -186,8 +211,15 @@ function Swatch({ color, name }: { color: string; name: string }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg },
+  content: { padding: spacing.lg, width: '100%', maxWidth: layout.maxContentWidth, alignSelf: 'center' },
   topBar: { marginBottom: spacing.sm },
+  bodyText: { fontSize: typography.base, color: colors.textSecondary, lineHeight: 22 },
+  code: { fontWeight: typography.semibold, color: colors.textPrimary },
+  gridRuleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  gridRuleLabel: { fontSize: typography.sm, color: colors.textSecondary, width: 110 },
+  gridDemo: { flex: 1, flexDirection: 'row', gap: spacing.xs },
+  gridCell: { flex: 1, height: 20, backgroundColor: colors.primary + '33', borderRadius: radius.sm },
+  gridRuleCols: { fontSize: typography.sm, color: colors.textTertiary, width: 44, textAlign: 'right' },
   pageTitle: { fontSize: typography['3xl'], fontWeight: typography.bold, color: colors.textPrimary },
   pageSubtitle: { fontSize: typography.base, color: colors.textSecondary, marginBottom: spacing.xl },
   section: { marginBottom: spacing.xl, gap: spacing.sm },
